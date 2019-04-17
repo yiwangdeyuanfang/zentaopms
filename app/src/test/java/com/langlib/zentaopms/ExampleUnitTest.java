@@ -1,4 +1,4 @@
-package ielts.langlib.com.zentaopms;
+package com.langlib.zentaopms;
 
 import org.junit.Test;
 
