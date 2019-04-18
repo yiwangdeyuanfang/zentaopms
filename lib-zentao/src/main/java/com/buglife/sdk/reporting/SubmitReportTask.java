@@ -20,21 +20,24 @@ package com.buglife.sdk.reporting;
 import com.buglife.sdk.Log;
 import com.buglife.sdk.NetworkManager;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
+import okhttp3.*;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public final class SubmitReportTask {
     private final NetworkManager mNetworkManager;
     private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String BUGLIFE_REPORT_URL = NetworkManager.BUGLIFE_URL+"/api/v1/reports.json";
+    //    private static final String BUGLIFE_REPORT_URL = NetworkManager.BUGLIFE_URL+"/api/v1/reports.json";
+    //    private static final String BUGLIFE_REPORT_URL = NetworkManager.BUGLIFE_URL+"/index.php?m=bug&f=create&productID=2&t=json";
+    private static final String BUGLIFE_REPORT_URL =
+            "http://192.168.80.30/zentaopms/www/index.php?m=bug&f=create&t=json&productID=1&zentaosid=5nk9viec8fk6nithsv3trq3690";
+    private static final String LOG_REPORT_URL =
+            NetworkManager.BUGLIFE_URL + "/index.php?m=user&f=login&t=json&zentaosid=5nk9viec8fk6nithsv3trq3690";
 
     public SubmitReportTask() {
         mNetworkManager = NetworkManager.getInstance();
@@ -42,11 +45,26 @@ public final class SubmitReportTask {
 
     /**
      * Synchronously executes a POST request
+     *
      * @param report a JSON payload with the report to submit
      * @return The result of the network request
      */
     public Result execute(JSONObject report) {
-        final Request request = newRequest(report);
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("title", "代码测试创建bug1000011");
+            jsonObject.put("assignedTo", "zhangyueli");
+            jsonObject.put("openedBuild", "trunk");
+            jsonObject.put("product", 1);
+            jsonObject.put("module", 1);
+            jsonObject.put("type", "codeerror");
+            jsonObject.put("severity", 3);
+            jsonObject.put("steps", "123");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final Request request = newRequest1(jsonObject);
 
         try {
             final Response response = mNetworkManager.executeRequest(request);
@@ -54,7 +72,39 @@ public final class SubmitReportTask {
                 return new Result(new IllegalStateException("Response body was null!"));
             }
 
-            final JSONObject responseJSONObject = new JSONObject(response.body().string());
+            String str = response.body().string();
+            Log.d("Report submitted successfully!" + str);
+            final JSONObject responseJSONObject = new JSONObject(str);
+            Log.d("Report submitted successfully!");
+            return new Result(responseJSONObject);
+        } catch (Exception error) {
+            Log.d("Error submitting report", error);
+            return new Result(error);
+        }
+
+        //       return login();
+    }
+
+    public Result login() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("account", "zhangyueli");
+            jsonObject.put("password", "Zyl123456");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final Request request = newRequest(jsonObject);
+
+        try {
+            final Response response = mNetworkManager.executeRequest(request);
+            if (response.body() == null) {
+                return new Result(new IllegalStateException("Response body was null!"));
+            }
+
+            String str = response.body().string();
+            Log.d("Report submitted successfully!" + str);
+            final JSONObject responseJSONObject = new JSONObject(str);
             Log.d("Report submitted successfully!");
             return new Result(responseJSONObject);
         } catch (Exception error) {
@@ -65,7 +115,8 @@ public final class SubmitReportTask {
 
     /**
      * Asynchronously executes a POST request
-     * @param report a JSON payload with the report to submit
+     *
+     * @param report   a JSON payload with the report to submit
      * @param callback Calls back with the result of the request; this is called on the main thread
      */
     public void execute(JSONObject report, final ReportSubmissionCallback callback) {
@@ -86,10 +137,25 @@ public final class SubmitReportTask {
     }
 
     private Request newRequest(JSONObject report) {
+        return new Request.Builder().url(BUGLIFE_REPORT_URL)
+                //                .url(LOG_REPORT_URL)
+                .post(RequestBody.create(MEDIA_TYPE_JSON, report.toString())).build();
+    }
+
+    private Request newRequest1(JSONObject report) {
+        RequestBody requestBody = new FormBody.Builder()
+                .add("title", "代码测试创建bug10000111")
+                .add("assignedTo", "zhangyueli")
+                .add("openedBuild", "trunk")
+                .add("product", "1")
+                .add("module", "1")
+                .add("type", "codeerror")
+                .add("severity", "3")
+                .add("steps", "123").build();
+
         return new Request.Builder()
                 .url(BUGLIFE_REPORT_URL)
-                .post(RequestBody.create(MEDIA_TYPE_JSON, report.toString()))
-                .build();
+                .post(requestBody).build();
     }
 
     public class Result {
