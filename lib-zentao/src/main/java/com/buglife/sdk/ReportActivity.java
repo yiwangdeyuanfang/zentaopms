@@ -40,7 +40,18 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.buglife.sdk.model.AllUserData;
+import com.buglife.sdk.model.AllUserItemData;
+import com.buglife.sdk.reporting.CreateBugData;
 import com.buglife.sdk.reporting.ReportSubmissionCallback;
+import com.google.gson.Gson;
+import com.langlib.net.HttpCallback;
+import com.langlib.net.HttpTaskUtil;
+import com.langlib.utils.LogUtil;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +72,10 @@ public class ReportActivity extends AppCompatActivity {
     private @Nullable ProgressDialog mProgressDialog;
     private @NonNull ColorPalette mColorPalette;
 
+
+    //所有用户
+    private AllUserData mAllUserData;
+
     public static Intent newStartIntent(Context context, BugContext bugContext) {
         Intent intent = new Intent(context, ReportActivity.class);
         intent.setFlags(intent.getFlags() | FLAG_ACTIVITY_NEW_TASK);
@@ -75,6 +90,8 @@ public class ReportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report);
+
+        initModelData();
 
         mAttachmentListView = (ListView) findViewById(R.id.attachment_list_view);
 
@@ -93,6 +110,8 @@ public class ReportActivity extends AppCompatActivity {
                 showActivityForAttachment(attachment);
             }
         });
+
+        initContentItem();
 
         mInputFields = Buglife.getInputFields();
         ArrayList<InputFieldView> inputFieldViews = new ArrayList<>();
@@ -137,6 +156,21 @@ public class ReportActivity extends AppCompatActivity {
         ActivityUtils.setStatusBarColor(this, mColorPalette.getColorPrimaryDark());
     }
 
+    public void initModelData(){
+        mAllUserData = new AllUserData();
+    }
+
+    public void initContentItem(){
+        PickerInputField pickerInputField = new PickerInputField("assignedTo");
+        for(AllUserItemData itemData : mAllUserData.getUserItemData()) {
+            pickerInputField.addOption(itemData.getAssignToUser());
+        }
+
+
+
+        Buglife.setInputFields(pickerInputField,TextInputField.summaryInputField(),TextInputField.summaryInputField());
+    }
+
     private @Nullable String getValueForInputField(@NonNull InputField inputField) {
         String attributeName = inputField.getAttributeName();
         Attribute attribute = mBugContext.getAttribute(attributeName);
@@ -165,7 +199,8 @@ public class ReportActivity extends AppCompatActivity {
                 finish();
                 return true;
             case SEND_MENU_ITEM:
-                submitReport();
+//                submitReport();
+                getAllUser();
                 return true;
         }
 
@@ -254,6 +289,31 @@ public class ReportActivity extends AppCompatActivity {
         });
     }
 
+    private void submitReport1() {
+        Report report = new Report(mBugContext);
+
+        if (Buglife.getRetryPolicy() == RetryPolicy.MANUAL) {
+            showProgressDialog();
+        }
+
+        CreateBugData bugData = new CreateBugData();
+        bugData.setTitle("代码测试创建bug1000011");
+        bugData.setAssignedTo("zhangyueli");
+        bugData.setOpenedBuild( "trunk");
+        bugData.setProduct( 1);
+        bugData.setModule(1);
+        bugData.setType("codeerror");
+        bugData.setSeverity( 3);
+        bugData.setSteps("123");
+
+        Gson gson = new Gson();
+        gson.toJson(bugData);
+
+//        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, gson.toJson(bugData),new HttpCallback<>);
+
+    }
+
+
     private void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = ProgressDialog.show(this, getString(R.string.sending_toast), "");
@@ -282,6 +342,39 @@ public class ReportActivity extends AppCompatActivity {
         });
 
         alertDialog.show();
+    }
+
+
+    //获取所有用户
+    public void getAllUser(){
+
+        mAllUserData.getUserItemData().clear();
+
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.LOAD_ALL_USERS, "",new HttpCallback<String>(){
+
+            @Override
+            public void onSuccess(String htmlString) {
+                Log.i("uploadData() getAllUser() s = " + htmlString);
+
+                Document document = Jsoup.parse(htmlString);
+                Elements elements = document.getElementsByTag("option");
+
+
+                //遍历Elements,解析其标签
+                for (Element title : elements) {
+                    Log.d("title = " + title.text());
+
+                    AllUserItemData itemData = new AllUserItemData();
+                    itemData.setAssignToUser(title.text());
+                    mAllUserData.add(itemData);
+                }
+
+            }
+            @Override
+            public void onError(String errorMsg) {
+                Log.i("uploadData() onError() errorMsg = " + errorMsg);
+            }
+        },String.class);
     }
 }
 
