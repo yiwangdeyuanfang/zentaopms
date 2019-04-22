@@ -66,7 +66,7 @@ final class PickerInputFieldView extends InputFieldView {
 
     private void showPickerDialog(@NonNull final PickerInputField pickerInputField, @NonNull final ValueCoordinator valueCoordinator) {
         Context context = getContext();
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(pickerInputField.getTitle());
 
         final List<String> optionTitles = pickerInputField.getOptionTitles();
@@ -85,8 +85,10 @@ final class PickerInputFieldView extends InputFieldView {
             public void onClick(DialogInterface dialog, int which) {
                 if (which != -1) {
                     final String newValue = pickerInputField.getOptionValue(which);
-                    PickerInputFieldView.this.setValue(newValue);
+                    final String newOptionTilte = pickerInputField.getOptionTitle(which);
+                    PickerInputFieldView.this.setValue(newOptionTilte);
                     valueCoordinator.onValueChanged(pickerInputField, newValue);
+                    dialog.dismiss();
                 }
             }
         });

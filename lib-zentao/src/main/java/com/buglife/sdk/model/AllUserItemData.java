@@ -11,13 +11,23 @@ package com.buglife.sdk.model;/**
 
 public class AllUserItemData {
 
-    private String assignToUser;
+    //<option value='zhangyueli' title='Z:张月丽' data-keys='z:zhangxinglei zzxl'>Z:张月丽</option>
+    private String value;  //对应zhangyueli
+    private String name;   //对应张月丽
 
-    public String getAssignToUser() {
-        return assignToUser;
+    public String getValue() {
+        return value;
     }
 
-    public void setAssignToUser(String assignToUser) {
-        this.assignToUser = assignToUser;
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

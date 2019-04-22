@@ -69,7 +69,7 @@ public final class PickerInputField extends InputField {
      * @param optionTitle The user-facing option title
      * @param optionValue The option value, which is submitted along with bug reports
      */
-    private void addOption(@NonNull String optionTitle, @NonNull String optionValue) {
+    public void addOption(@NonNull String optionTitle, @NonNull String optionValue) {
         mOptions.put(optionTitle, optionValue);
     }
 
@@ -94,5 +94,9 @@ public final class PickerInputField extends InputField {
 
     @NonNull String getOptionValue(int index) {
         return getOptionValues().get(index);
+    }
+
+    @NonNull String getOptionTitle(int index) {
+        return getOptionTitles().get(index);
     }
 }

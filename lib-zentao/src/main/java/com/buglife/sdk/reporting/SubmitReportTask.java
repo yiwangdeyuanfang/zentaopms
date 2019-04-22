@@ -50,21 +50,9 @@ public final class SubmitReportTask {
      * @return The result of the network request
      */
     public Result execute(JSONObject report) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("title", "代码测试创建bug1000011");
-            jsonObject.put("assignedTo", "zhangyueli");
-            jsonObject.put("openedBuild", "trunk");
-            jsonObject.put("product", 1);
-            jsonObject.put("module", 1);
-            jsonObject.put("type", "codeerror");
-            jsonObject.put("severity", 3);
-            jsonObject.put("steps", "123");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        final Request request = newRequest1(jsonObject);
+        Log.d("Report submitted successfully!" + report);
+        final Request request = newRequest1(report);
 
         try {
             final Response response = mNetworkManager.executeRequest(request);

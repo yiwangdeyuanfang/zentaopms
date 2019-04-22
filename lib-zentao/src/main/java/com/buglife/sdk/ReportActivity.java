@@ -32,6 +32,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,8 +41,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.buglife.sdk.model.AllUserData;
-import com.buglife.sdk.model.AllUserItemData;
+import com.buglife.sdk.model.*;
 import com.buglife.sdk.reporting.CreateBugData;
 import com.buglife.sdk.reporting.ReportSubmissionCallback;
 import com.google.gson.Gson;
@@ -75,6 +75,16 @@ public class ReportActivity extends AppCompatActivity {
 
     //所有用户
     private AllUserData mAllUserData;
+
+    private AccountInfo mAccountInfo;
+
+    private PickerInputField mAssignedToField; //可分配的人
+
+    private PickerInputField mBugTypeField;//Bug类型
+
+    private PickerInputField mSeverityField ;//bug等级
+
+    private PickerInputField mPriField;//优先级
 
     public static Intent newStartIntent(Context context, BugContext bugContext) {
         Intent intent = new Intent(context, ReportActivity.class);
@@ -111,28 +121,9 @@ public class ReportActivity extends AppCompatActivity {
             }
         });
 
-        initContentItem();
-
-        mInputFields = Buglife.getInputFields();
-        ArrayList<InputFieldView> inputFieldViews = new ArrayList<>();
-
-        LinearLayout inputFieldLayout = (LinearLayout) findViewById(R.id.input_field_layout);
-
-        for (final InputField inputField : mInputFields) {
-            final InputFieldView inputFieldView = InputFieldView.newInstance(this, inputField);
-            final String currentValue = getValueForInputField(inputField);
-
-            inputFieldView.configureWithInputField(inputField, new InputFieldView.ValueCoordinator() {
-                @Override
-                public void onValueChanged(@NonNull InputField inputField, @Nullable String newValue) {
-                    setValueForInputField(inputField, newValue);
-                }
-            });
-
-            inputFieldLayout.addView(inputFieldView);
-            inputFieldViews.add(inputFieldView);
-            inputFieldView.setValue(currentValue);
-        }
+//        initContentItem();
+//
+//        initContentItemRes();
 
         mColorPalette = new ColorPalette.Builder(this).build();
         int colorPrimary = mColorPalette.getColorPrimary();
@@ -154,6 +145,8 @@ public class ReportActivity extends AppCompatActivity {
         }
 
         ActivityUtils.setStatusBarColor(this, mColorPalette.getColorPrimaryDark());
+
+        getAllUser();
     }
 
     public void initModelData(){
@@ -161,14 +154,66 @@ public class ReportActivity extends AppCompatActivity {
     }
 
     public void initContentItem(){
-        PickerInputField pickerInputField = new PickerInputField("assignedTo");
+
+        //问题描述
+        TextInputField textInputField = new TextInputField(ZentaoConstant.BUG_TITLE,false);
+        textInputField.setTitle(getString(R.string.summary_field_title));
+        textInputField.setMultiline(true);
+
+        //可分配的人
+        mAssignedToField = new PickerInputField(ZentaoConstant.BUG_ASSIGNEDTO);
+        mAssignedToField.setTitle("指派给");
         for(AllUserItemData itemData : mAllUserData.getUserItemData()) {
-            pickerInputField.addOption(itemData.getAssignToUser());
+            mAssignedToField.addOption(itemData.getName(),itemData.getValue());
         }
 
 
+        //Bug类型
+        mBugTypeField = new PickerInputField(ZentaoConstant.BUG_TYPE);
+        mBugTypeField.setTitle("Bug类型");
+        for(BugTypeData bugTypeData : ZentaoConstant.bugTypeList()) {
+            mBugTypeField.addOption(bugTypeData.getDes(),bugTypeData.getBugCode());
+        }
 
-        Buglife.setInputFields(pickerInputField,TextInputField.summaryInputField(),TextInputField.summaryInputField());
+        //bug等级
+        mSeverityField = new PickerInputField(ZentaoConstant.BUG_SEVERITY);
+        mSeverityField.setTitle("严重程度");
+        for(String severity : ZentaoConstant.SEVERITY) {
+            mSeverityField.addOption(severity);
+        }
+
+        //优先级
+        mPriField = new PickerInputField(ZentaoConstant.BUG_PRI);
+        mPriField.setTitle("优先级");
+        for(String severity : ZentaoConstant.PRI_TYPE) {
+            mPriField.addOption(severity);
+        }
+
+
+        Buglife.setInputFields(textInputField,mAssignedToField,mSeverityField,mBugTypeField,mPriField);
+    }
+
+    public void initContentItemRes(){
+        mInputFields = Buglife.getInputFields();
+        ArrayList<InputFieldView> inputFieldViews = new ArrayList<>();
+
+        LinearLayout inputFieldLayout = (LinearLayout) findViewById(R.id.input_field_layout);
+
+        for (final InputField inputField : mInputFields) {
+            final InputFieldView inputFieldView = InputFieldView.newInstance(this, inputField);
+            final String currentValue = getValueForInputField(inputField);
+
+            inputFieldView.configureWithInputField(inputField, new InputFieldView.ValueCoordinator() {
+                @Override
+                public void onValueChanged(@NonNull InputField inputField, @Nullable String newValue) {
+                    setValueForInputField(inputField, newValue);
+                }
+            });
+
+            inputFieldLayout.addView(inputFieldView);
+            inputFieldViews.add(inputFieldView);
+            inputFieldView.setValue(currentValue);
+        }
     }
 
     private @Nullable String getValueForInputField(@NonNull InputField inputField) {
@@ -199,8 +244,9 @@ public class ReportActivity extends AppCompatActivity {
                 finish();
                 return true;
             case SEND_MENU_ITEM:
-//                submitReport();
-                getAllUser();
+                submitReport();
+//                getAllUser();
+//                getAccountInfo();
                 return true;
         }
 
@@ -289,27 +335,20 @@ public class ReportActivity extends AppCompatActivity {
         });
     }
 
-    private void submitReport1() {
-        Report report = new Report(mBugContext);
+    private void getAccountInfo() {
 
-        if (Buglife.getRetryPolicy() == RetryPolicy.MANUAL) {
-            showProgressDialog();
-        }
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "" ,new HttpCallback<AccountInfo>(){
 
-        CreateBugData bugData = new CreateBugData();
-        bugData.setTitle("代码测试创建bug1000011");
-        bugData.setAssignedTo("zhangyueli");
-        bugData.setOpenedBuild( "trunk");
-        bugData.setProduct( 1);
-        bugData.setModule(1);
-        bugData.setType("codeerror");
-        bugData.setSeverity( 3);
-        bugData.setSteps("123");
+            @Override
+            public void onSuccess(AccountInfo accountInfo) {
+                mAccountInfo = accountInfo;
+            }
 
-        Gson gson = new Gson();
-        gson.toJson(bugData);
-
-//        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, gson.toJson(bugData),new HttpCallback<>);
+            @Override
+            public void onError(String errorMsg) {
+                super.onError(errorMsg);
+            }
+        },AccountInfo.class);
 
     }
 
@@ -362,12 +401,19 @@ public class ReportActivity extends AppCompatActivity {
 
                 //遍历Elements,解析其标签
                 for (Element title : elements) {
-                    Log.d("title = " + title.text());
+                    Log.d("title = " + title.text() + " " + title.val());
 
-                    AllUserItemData itemData = new AllUserItemData();
-                    itemData.setAssignToUser(title.text());
-                    mAllUserData.add(itemData);
+                    if(!TextUtils.isEmpty(title.val())) {
+                        AllUserItemData itemData = new AllUserItemData();
+                        itemData.setValue(title.val());
+                        itemData.setName(title.text());
+                        mAllUserData.add(itemData);
+                    }
                 }
+
+                initContentItem();
+
+                initContentItemRes();
 
             }
             @Override
@@ -375,6 +421,21 @@ public class ReportActivity extends AppCompatActivity {
                 Log.i("uploadData() onError() errorMsg = " + errorMsg);
             }
         },String.class);
+    }
+    //获取Bug严重程度列表
+    public void getSeverityList(){
+
+
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.SEVERITY_LIST, "",new HttpCallback<Severity>(){
+
+            @Override
+            public void onSuccess(Severity severity) {
+            }
+            @Override
+            public void onError(String errorMsg) {
+                Log.i("uploadData() onError() errorMsg = " + errorMsg);
+            }
+        },Severity.class);
     }
 }
 
