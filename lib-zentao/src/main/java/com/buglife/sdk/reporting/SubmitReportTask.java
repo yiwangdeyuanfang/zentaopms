@@ -115,9 +115,10 @@ public final class SubmitReportTask {
             if(key.equals("files")){ //图片字段
                 try {
                     JSONArray jsonArray = report.getJSONArray("files");
-                    for(int i = 0; i < jsonArray.length() ; i ++){
-                        multipartBuilder.addFormDataPart("file" + i, jsonArray.getString(i));
+                    for(int i = 0; i < jsonArray.length() ; i ++) {
+                        multipartBuilder.addFormDataPart("files"+"["+i+"]",jsonArray.getString(i),  RequestBody.create(MediaType.parse("multipart/form-data"), new File(jsonArray.getString(i))));
                     }
+
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -130,14 +131,14 @@ public final class SubmitReportTask {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                formBuild.add(key,value);
+                multipartBuilder.addFormDataPart(key,value);
             }
 
         }
 
-        RequestBody requestBody = formBuild.build();
-
-        RequestBody multipartBody = multipartBuilder .addPart(requestBody).build();
+        RequestBody multipartBody = multipartBuilder
+                .setType(MultipartBody.FORM)
+                .build();
 
         return new Request.Builder()
                 .header("Authorization", "Client-ID " + UUID.randomUUID())

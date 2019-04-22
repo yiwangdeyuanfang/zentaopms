@@ -19,6 +19,7 @@ package com.buglife.sdk;
 
 import android.location.Location;
 
+import android.text.TextUtils;
 import com.buglife.sdk.reporting.DeviceSnapshot;
 import com.buglife.sdk.reporting.EnvironmentSnapshot;
 import com.buglife.sdk.reporting.SessionSnapshot;
@@ -48,17 +49,51 @@ public final class Report {
     public JSONObject toJSON() throws JSONException, IOException {
         JSONObject params = new JSONObject();
 
+        Attribute summaryAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_TITLE);
 
+        if(summaryAttribute != null && !TextUtils.isEmpty(summaryAttribute.getValue())) {
+            params.put("title", summaryAttribute.getValue());
+        }else {
+            params.put("title","问题描述");
+        }
 
-        params.put("title", mBugContext.getAttribute(ZentaoConstant.BUG_TITLE).getValue());
-        params.put("assignedTo", mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO).getValue());
-        params.put("openedBuild", "trunk");
+        Attribute assignedToAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO);
+        if(assignedToAttribute != null){
+            params.put("assignedTo", assignedToAttribute.getValue());
+        }
+
+        Attribute openedBuildAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO);
+        if(openedBuildAttribute != null){
+            params.put("openedBuild", "trunk");
+        }else {
+            params.put("openedBuild", "trunk");
+        }
+
         params.put("product", "1");
         params.put("module", "1");
         params.put("os", "Android");
-        params.put("type", mBugContext.getAttribute(ZentaoConstant.BUG_TYPE).getValue());
-        params.put("severity", mBugContext.getAttribute(ZentaoConstant.BUG_SEVERITY).getValue());
-        params.put("steps", mBugContext.getAttribute(ZentaoConstant.BUG_STEPS).getValue());
+
+
+        Attribute typeAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_TYPE);
+        if(typeAttribute != null){
+            params.put("type", typeAttribute.getValue());
+        }else {
+            params.put("type", "codeerror");
+        }
+
+        Attribute severityAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_SEVERITY);
+        if(severityAttribute != null){
+            params.put("severity", severityAttribute.getValue());
+        }else {
+            params.put("severity", "4");
+        }
+
+        Attribute stepsAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_STEPS);
+        if(stepsAttribute != null){
+            params.put("steps", stepsAttribute.getValue());
+        }else {
+            params.put("steps", "重现步骤");
+        }
 
 
         // Attachments 截图
@@ -66,7 +101,7 @@ public final class Report {
 
         for (FileAttachment attachment : mBugContext.getAttachments()) {
             attachmentsParams.put(attachment.getFile());
-            attachment.getFile().delete();
+//            attachment.getFile().delete();
         }
 
         if (attachmentsParams.length() > 0) {
@@ -74,20 +109,5 @@ public final class Report {
         }
 
         return params;
-    }
-
-
-    public RequestBody getRequestBody() {
-        RequestBody requestBody =
-                new FormBody.Builder()
-                        .add("title", mBugContext.getAttribute(ZentaoConstant.BUG_TITLE).getValue())
-                        .add("assignedTo", mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO).getValue())
-                        .add("openedBuild", "trunk")
-                        .add("product", mBugContext.getAttribute(ZentaoConstant.BUG_PRODUCT).getValue())
-                        .add("module", mBugContext.getAttribute(ZentaoConstant.BUG_MODULE).getValue())
-                        .add("type", mBugContext.getAttribute(ZentaoConstant.BUG_TYPE).getValue())
-                        .add("severity", mBugContext.getAttribute(ZentaoConstant.BUG_SEVERITY).getValue())
-                        .add("steps", mBugContext.getAttribute(ZentaoConstant.BUG_TITLE).getValue()).build();
-        return requestBody;
     }
 }
