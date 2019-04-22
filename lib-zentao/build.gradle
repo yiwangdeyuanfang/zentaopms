@@ -1,8 +1,15 @@
 buildscript {
     repositories {
-        jcenter()
+        maven {
+            name "langlib_maven"
+            url "http://192.168.1.145:8081/repository/maven-android-public/"
+        }
+        maven { url "https://jitpack.io" }
+
+        mavenLocal()
+        maven { url 'https://maven.google.com' }
         mavenCentral()
-        google()
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.2'
@@ -13,9 +20,16 @@ apply plugin: 'com.android.library'
 
 allprojects {
     repositories {
-        jcenter()
+        maven {
+            name "langlib_maven"
+            url "http://192.168.1.145:8081/repository/maven-android-public/"
+        }
+        maven { url "https://jitpack.io" }
+
+        mavenLocal()
+        maven { url 'https://maven.google.com' }
         mavenCentral()
-        google()
+        jcenter()
     }
 }
 
@@ -49,8 +63,23 @@ dependencies {
     implementation "com.android.support:appcompat-v7:$SUPPORT_VERSION"
     implementation "com.android.support:design:$SUPPORT_VERSION"
     implementation "com.android.support:support-dynamic-animation:$SUPPORT_VERSION"
-    implementation "com.squareup.okhttp3:okhttp:3.12.1"
+//    implementation "com.squareup.okhttp3:okhttp:3.12.1"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:2.8.0'
     testImplementation 'org.json:json:20171018'
+
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    compile 'langlib.library:lib-common:2.0.0+@aar'
+    compile 'com.squareup.okhttp3:okhttp:3.10.0+'
+    compile 'com.squareup.okio:okio:1.13.0+'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0+'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0+'
+    compile 'com.squareup.retrofit2:converter-scalars:2.0.0+'
+    compile 'com.github.bumptech.glide:glide:4.0.0'
+
+    //解析html
+    compile 'org.jsoup:jsoup:1.11.3'
+
+//    compile 'com.github.zdongcoding:ajsoup:0.1.0'
 }

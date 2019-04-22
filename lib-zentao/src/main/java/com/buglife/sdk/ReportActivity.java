@@ -156,9 +156,9 @@ public class ReportActivity extends AppCompatActivity {
     public void initContentItem(){
 
         //问题描述
-        TextInputField textInputField = new TextInputField(ZentaoConstant.BUG_TITLE,false);
-        textInputField.setTitle(getString(R.string.summary_field_title));
-        textInputField.setMultiline(true);
+        TextInputField titleTextIput = new TextInputField(ZentaoConstant.BUG_TITLE,false);
+        titleTextIput.setTitle(getString(R.string.summary_field_title));
+        titleTextIput.setMultiline(true);
 
         //可分配的人
         mAssignedToField = new PickerInputField(ZentaoConstant.BUG_ASSIGNEDTO);
@@ -189,8 +189,12 @@ public class ReportActivity extends AppCompatActivity {
             mPriField.addOption(severity);
         }
 
+        //重现步骤
+        TextInputField stepTextInput = new TextInputField(ZentaoConstant.BUG_STEPS,false);
+        stepTextInput.setTitle(getString(R.string.setp_field_title));
+        stepTextInput.setMultiline(true);
 
-        Buglife.setInputFields(textInputField,mAssignedToField,mSeverityField,mBugTypeField,mPriField);
+        Buglife.setInputFields(titleTextIput,mAssignedToField,mSeverityField,mBugTypeField,mPriField,stepTextInput);
     }
 
     public void initContentItemRes(){

@@ -20,6 +20,7 @@ package com.buglife.sdk.reporting;
 import com.buglife.sdk.Log;
 import com.buglife.sdk.NetworkManager;
 
+import com.buglife.sdk.ZentaoConstant;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import okhttp3.*;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 public final class SubmitReportTask {
     private final NetworkManager mNetworkManager;
@@ -52,37 +54,7 @@ public final class SubmitReportTask {
     public Result execute(JSONObject report) {
 
         Log.d("Report submitted successfully!" + report);
-        final Request request = newRequest1(report);
-
-        try {
-            final Response response = mNetworkManager.executeRequest(request);
-            if (response.body() == null) {
-                return new Result(new IllegalStateException("Response body was null!"));
-            }
-
-            String str = response.body().string();
-            Log.d("Report submitted successfully!" + str);
-            final JSONObject responseJSONObject = new JSONObject(str);
-            Log.d("Report submitted successfully!");
-            return new Result(responseJSONObject);
-        } catch (Exception error) {
-            Log.d("Error submitting report", error);
-            return new Result(error);
-        }
-
-        //       return login();
-    }
-
-    public Result login() {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("account", "zhangyueli");
-            jsonObject.put("password", "Zyl123456");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        final Request request = newRequest(jsonObject);
+        final Request request = newRequest(report);
 
         try {
             final Response response = mNetworkManager.executeRequest(request);
@@ -100,6 +72,8 @@ public final class SubmitReportTask {
             return new Result(error);
         }
     }
+
+
 
     /**
      * Asynchronously executes a POST request
@@ -124,24 +98,25 @@ public final class SubmitReportTask {
         Log.d("JSON object request for report added to request queue...");
     }
 
+
     private Request newRequest(JSONObject report) {
-        return new Request.Builder().url(BUGLIFE_REPORT_URL)
-                //                .url(LOG_REPORT_URL)
-                .post(RequestBody.create(MEDIA_TYPE_JSON, report.toString())).build();
-    }
+        FormBody.Builder build = new FormBody.Builder();
 
-    private Request newRequest1(JSONObject report) {
-        RequestBody requestBody = new FormBody.Builder()
-                .add("title", "代码测试创建bug10000111")
-                .add("assignedTo", "zhangyueli")
-                .add("openedBuild", "trunk")
-                .add("product", "1")
-                .add("module", "1")
-                .add("type", "codeerror")
-                .add("severity", "3")
-                .add("steps", "123").build();
+        Iterator<String> it = report.keys();
+        while(it.hasNext()) {
+            // 获得key
+            String key = it.next();
+            String value = null;
+            try {
+                value = report.getString(key);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            build.add(key,value);
+        }
 
-        return new Request.Builder()
+        RequestBody requestBody = build.build();
+            return new Request.Builder()
                 .url(BUGLIFE_REPORT_URL)
                 .post(requestBody).build();
     }

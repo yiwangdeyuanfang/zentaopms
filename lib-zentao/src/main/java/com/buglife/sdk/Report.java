@@ -23,6 +23,8 @@ import com.buglife.sdk.reporting.DeviceSnapshot;
 import com.buglife.sdk.reporting.EnvironmentSnapshot;
 import com.buglife.sdk.reporting.SessionSnapshot;
 
+import okhttp3.FormBody;
+import okhttp3.RequestBody;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,11 +50,45 @@ public final class Report {
 
 
 
-//        params.put("title", mBugContext.getAttribute());
-//        params.put("app", appParams);
+        params.put("title", mBugContext.getAttribute(ZentaoConstant.BUG_TITLE).getValue());
+        params.put("assignedTo", mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO).getValue());
+        params.put("openedBuild", "trunk");
+        params.put("product", "1");
+        params.put("module", "1");
+        params.put("os", "Android");
+        params.put("type", mBugContext.getAttribute(ZentaoConstant.BUG_TYPE).getValue());
+        params.put("severity", mBugContext.getAttribute(ZentaoConstant.BUG_SEVERITY).getValue());
+        params.put("steps", "代码测试");
 
 
+        // Attachments 截图
+        JSONArray attachmentsParams = new JSONArray();
+
+        for (FileAttachment attachment : mBugContext.getAttachments()) {
+            // TODO: Handle these JSON exceptions separately? So that bug reports can still be submitted
+            attachmentsParams.put(attachment.toJSON());
+            attachment.getFile().delete();
+        }
+
+        if (attachmentsParams.length() > 0) {
+            params.put("files", attachmentsParams);
+        }
 
         return params;
+    }
+
+
+    public RequestBody getRequestBody() {
+        RequestBody requestBody =
+                new FormBody.Builder()
+                        .add("title", mBugContext.getAttribute(ZentaoConstant.BUG_TITLE).getValue())
+                        .add("assignedTo", mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO).getValue())
+                        .add("openedBuild", "trunk")
+                        .add("product", mBugContext.getAttribute(ZentaoConstant.BUG_PRODUCT).getValue())
+                        .add("module", mBugContext.getAttribute(ZentaoConstant.BUG_MODULE).getValue())
+                        .add("type", mBugContext.getAttribute(ZentaoConstant.BUG_TYPE).getValue())
+                        .add("severity", mBugContext.getAttribute(ZentaoConstant.BUG_SEVERITY).getValue())
+                        .add("steps", mBugContext.getAttribute(ZentaoConstant.BUG_TITLE).getValue()).build();
+        return requestBody;
     }
 }
