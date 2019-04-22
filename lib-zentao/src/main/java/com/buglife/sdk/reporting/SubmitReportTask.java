@@ -24,12 +24,14 @@ import com.buglife.sdk.ZentaoConstant;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import okhttp3.*;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.UUID;
 
 public final class SubmitReportTask {
     private final NetworkManager mNetworkManager;
@@ -100,25 +102,49 @@ public final class SubmitReportTask {
 
 
     private Request newRequest(JSONObject report) {
-        FormBody.Builder build = new FormBody.Builder();
+
+        FormBody.Builder formBuild = new FormBody.Builder();
+
+        MultipartBody.Builder multipartBuilder =  new MultipartBody.Builder();
+        multipartBuilder.setType(MultipartBody.FORM);
 
         Iterator<String> it = report.keys();
         while(it.hasNext()) {
             // 获得key
             String key = it.next();
-            String value = null;
-            try {
-                value = report.getString(key);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if(key.equals("files")){ //图片字段
+                try {
+                    JSONArray jsonArray = report.getJSONArray("files");
+                    for(int i = 0; i < jsonArray.length() ; i ++){
+                        multipartBuilder.addFormDataPart("file" + i, jsonArray.getString(i));
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }else { //非图片字段
+                String value = null;
+                try {
+                    value = report.getString(key);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                formBuild.add(key,value);
             }
-            build.add(key,value);
+
         }
 
-        RequestBody requestBody = build.build();
-            return new Request.Builder()
+        RequestBody requestBody = formBuild.build();
+
+        RequestBody multipartBody = multipartBuilder .addPart(requestBody).build();
+
+        return new Request.Builder()
+                .header("Authorization", "Client-ID " + UUID.randomUUID())
                 .url(BUGLIFE_REPORT_URL)
-                .post(requestBody).build();
+                .post(multipartBody)
+                .build();
+
     }
 
     public class Result {

@@ -58,15 +58,14 @@ public final class Report {
         params.put("os", "Android");
         params.put("type", mBugContext.getAttribute(ZentaoConstant.BUG_TYPE).getValue());
         params.put("severity", mBugContext.getAttribute(ZentaoConstant.BUG_SEVERITY).getValue());
-        params.put("steps", "代码测试");
+        params.put("steps", mBugContext.getAttribute(ZentaoConstant.BUG_STEPS).getValue());
 
 
         // Attachments 截图
         JSONArray attachmentsParams = new JSONArray();
 
         for (FileAttachment attachment : mBugContext.getAttachments()) {
-            // TODO: Handle these JSON exceptions separately? So that bug reports can still be submitted
-            attachmentsParams.put(attachment.toJSON());
+            attachmentsParams.put(attachment.getFile());
             attachment.getFile().delete();
         }
 
