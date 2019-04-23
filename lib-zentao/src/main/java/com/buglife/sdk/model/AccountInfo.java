@@ -14,20 +14,29 @@ import java.util.List;
  * @date 2019/4/18
  *
  */
-public class AccountInfo extends BaseBody<AccountInfo> implements Parcelable {
+public class AccountInfo  implements Parcelable {
 
     private String title;
-//    private HashMap<String,String> products;
-//    private HashMap<String,String> users;
+
+    public HashMap<String, String> projects;   // 改为 Map 集合即可
+
+    public HashMap<String, String> users;   // 改为 Map 集合即可
+
     private int productID;
     private String productName;
-    private List<String> moduleOptionMenu;
-//    private HashMap<String,String> projects;
-//    private HashMap<String,String> builds;
+
+    public List<String> moduleOptionMenu;   // 改为 Map 集合即可
+
+    private HashMap<String,String> products;
+
+    private HashMap<String,String> builds;
+
     private int moduleID;
     private int projectID;
     private int taskID;
     private int storyID;
+
+    private int buildID;
 
     private int severity;
     private String type;
@@ -36,9 +45,8 @@ public class AccountInfo extends BaseBody<AccountInfo> implements Parcelable {
     protected AccountInfo(Parcel in) {
         title = in.readString();
         productID = in.readInt();
-
-        productName = in.readString();
         moduleOptionMenu = in.createStringArrayList();
+        productName = in.readString();
         moduleID = in.readInt();
         projectID = in.readInt();
         taskID = in.readInt();
@@ -68,21 +76,22 @@ public class AccountInfo extends BaseBody<AccountInfo> implements Parcelable {
         this.title = title;
     }
 
-//    public HashMap<String, String> getProducts() {
-//        return products;
-//    }
-//
-//    public void setProducts(HashMap<String, String> products) {
-//        this.products = products;
-//    }
-//
-//    public HashMap<String, String> getUsers() {
-//        return users;
-//    }
-//
-//    public void setUsers(HashMap<String, String> users) {
-//        this.users = users;
-//    }
+
+    public HashMap<String, String> getProducts() {
+        return products;
+    }
+
+    public void setProducts(HashMap<String, String> products) {
+        this.products = products;
+    }
+
+    public HashMap<String, String> getUsers() {
+        return users;
+    }
+
+    public void setUsers(HashMap<String, String> users) {
+        this.users = users;
+    }
 
     public int getProductID() {
         return productID;
@@ -108,21 +117,29 @@ public class AccountInfo extends BaseBody<AccountInfo> implements Parcelable {
         this.moduleOptionMenu = moduleOptionMenu;
     }
 
-//    public HashMap<String, String> getProjects() {
-//        return projects;
-//    }
-//
-//    public void setProjects(HashMap<String, String> projects) {
-//        this.projects = projects;
-//    }
-//
-//    public HashMap<String, String> getBuilds() {
-//        return builds;
-//    }
-//
-//    public void setBuilds(HashMap<String, String> builds) {
-//        this.builds = builds;
-//    }
+    public int getBuildID() {
+        return buildID;
+    }
+
+    public void setBuildID(int buildID) {
+        this.buildID = buildID;
+    }
+
+    public HashMap<String, String> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(HashMap<String, String> projects) {
+        this.projects = projects;
+    }
+
+    public HashMap<String, String> getBuilds() {
+        return builds;
+    }
+
+    public void setBuilds(HashMap<String, String> builds) {
+        this.builds = builds;
+    }
 
     public int getModuleID() {
         return moduleID;

@@ -55,6 +55,7 @@ import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
@@ -77,6 +78,7 @@ public class ReportActivity extends AppCompatActivity {
     private AllUserData mAllUserData;
 
     private AccountInfo mAccountInfo;
+    private List<ProjectsData> mProjectsData;
 
     private PickerInputField mAssignedToField; //可分配的人
 
@@ -121,10 +123,6 @@ public class ReportActivity extends AppCompatActivity {
             }
         });
 
-//        initContentItem();
-//
-//        initContentItemRes();
-
         mColorPalette = new ColorPalette.Builder(this).build();
         int colorPrimary = mColorPalette.getColorPrimary();
         int titleTextColor = mColorPalette.getTextColorPrimary();
@@ -146,11 +144,12 @@ public class ReportActivity extends AppCompatActivity {
 
         ActivityUtils.setStatusBarColor(this, mColorPalette.getColorPrimaryDark());
 
-        getAllUser();
+        getAccountInfo();
     }
 
     public void initModelData(){
         mAllUserData = new AllUserData();
+        mProjectsData = new ArrayList<>();
     }
 
     public void initContentItem(){
@@ -160,11 +159,18 @@ public class ReportActivity extends AppCompatActivity {
         titleTextIput.setTitle(getString(R.string.summary_field_title));
         titleTextIput.setMultiline(true);
 
+        //重现步骤
+        TextInputField stepTextInput = new TextInputField(ZentaoConstant.BUG_STEPS,false);
+        stepTextInput.setTitle(getString(R.string.setp_field_title));
+        stepTextInput.setMultiline(true);
+
         //可分配的人
         mAssignedToField = new PickerInputField(ZentaoConstant.BUG_ASSIGNEDTO);
         mAssignedToField.setTitle("指派给");
         for(AllUserItemData itemData : mAllUserData.getUserItemData()) {
-            mAssignedToField.addOption(itemData.getName(),itemData.getValue());
+            if(!TextUtils.isEmpty(itemData.getValue())) {
+                mAssignedToField.addOption(itemData.getName(), itemData.getValue());
+            }
         }
 
 
@@ -189,12 +195,17 @@ public class ReportActivity extends AppCompatActivity {
             mPriField.addOption(severity);
         }
 
-        //重现步骤
-        TextInputField stepTextInput = new TextInputField(ZentaoConstant.BUG_STEPS,false);
-        stepTextInput.setTitle(getString(R.string.setp_field_title));
-        stepTextInput.setMultiline(true);
+        //版本
+        PickerInputField projectsField = new PickerInputField(ZentaoConstant.BUG_PROJECTS);
+        projectsField.setTitle("版本号");
+        for(ProjectsData data : mProjectsData) {
+            if(!TextUtils.isEmpty(data.getProjectsId())) {
+                projectsField.addOption(data.getProjectsDes(), data.getProjectsId());
+            }
+        }
 
-        Buglife.setInputFields(titleTextIput,mAssignedToField,mSeverityField,mBugTypeField,mPriField,stepTextInput);
+
+        Buglife.setInputFields(titleTextIput,stepTextInput,mAssignedToField,mSeverityField,mBugTypeField,mPriField,projectsField);
     }
 
     public void initContentItemRes(){
@@ -339,23 +350,6 @@ public class ReportActivity extends AppCompatActivity {
         });
     }
 
-    private void getAccountInfo() {
-
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "" ,new HttpCallback<AccountInfo>(){
-
-            @Override
-            public void onSuccess(AccountInfo accountInfo) {
-                mAccountInfo = accountInfo;
-            }
-
-            @Override
-            public void onError(String errorMsg) {
-                super.onError(errorMsg);
-            }
-        },AccountInfo.class);
-
-    }
-
 
     private void showProgressDialog() {
         if (mProgressDialog == null) {
@@ -387,6 +381,50 @@ public class ReportActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    //获取bug的所有信息
+    private void getAccountInfo() {
+
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "" ,new HttpCallback<BaseBody>(){
+
+            @Override
+            public void onSuccess(BaseBody body) {
+                BaseBody baseBody  = body;
+
+                Gson gson = new Gson();
+                mAccountInfo = gson.fromJson(body.getData(),AccountInfo.class);
+
+                Map<String, String> products = mAccountInfo.getProjects(); //对动态的key，来创建map，间接从中取出实体类futrue。
+                for (String key:products.keySet()){                        //遍历取出key，再遍历map取出value。
+
+                    ProjectsData projectsData = new ProjectsData();
+                    projectsData.setProjectsId(key);
+                    projectsData.setProjectsDes(products.get(key));
+                    mProjectsData.add(projectsData);
+                }
+
+                Map<String, String> account = mAccountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。
+                for (String key:account.keySet()){                        //遍历取出key，再遍历map取出value。
+
+                    AllUserItemData userItemData = new AllUserItemData();
+                    userItemData.setValue(key);
+                    userItemData.setName(account.get(key));
+                    mAllUserData.add(userItemData);
+                }
+
+
+                //初始化界面
+                initContentItem();
+
+                initContentItemRes();
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+                super.onError(errorMsg);
+            }
+        },BaseBody.class);
+
+    }
 
     //获取所有用户
     public void getAllUser(){

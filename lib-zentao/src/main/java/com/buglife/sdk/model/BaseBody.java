@@ -8,10 +8,10 @@ package com.buglife.sdk.model;/**
  * @date 2019/4/18
  *
  */
-public class BaseBody<T> {
+public class BaseBody {
 
     private String status;
-    private T data;
+    private String data;
     private String md5;
 
     public String getStatus() {
@@ -22,11 +22,11 @@ public class BaseBody<T> {
         this.status = status;
     }
 
-    public T getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(T data) {
+    public void setData(String data) {
         this.data = data;
     }
 

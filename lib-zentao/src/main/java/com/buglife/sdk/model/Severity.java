@@ -7,7 +7,7 @@ import java.util.List;
  * @date 2019/4/18
  * Bug严重程度
  */
-public class Severity extends BaseBody<Severity> {
+public class Severity  {
     private String title;
     private List<String> fieldList;
 
