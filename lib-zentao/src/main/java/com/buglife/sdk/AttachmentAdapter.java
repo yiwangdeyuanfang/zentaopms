@@ -20,6 +20,8 @@ package com.buglife.sdk;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,10 +37,16 @@ import java.util.List;
 /**
  * Adapter for showing a list of attachment objects in the bug reporter UI
  */
-class AttachmentAdapter extends BaseAdapter {
+class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolder> {
+
+    private Context mContext;
+
     private ArrayList<FileAttachment> mDataSource;
 
-    AttachmentAdapter(List<FileAttachment> attachments) {
+    private ItemClickListener mItemClickListener;
+
+    AttachmentAdapter(Context context, List<FileAttachment> attachments) {
+        mContext = context;
         mDataSource = new ArrayList<>(attachments);
     }
 
@@ -47,43 +55,40 @@ class AttachmentAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    @NonNull
     @Override
-    public int getCount() {
-        return mDataSource.size();
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+        return new ViewHolder(
+                LayoutInflater.from(parent.getContext()).inflate(R.layout.attachment_list_item, parent, false));
+
     }
 
     @Override
-    public FileAttachment getItem(int position) {
-        return mDataSource.get(position);
-    }
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int position) {
+        final FileAttachment attachment = mDataSource.get(position);
 
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            convertView = inflater.inflate(R.layout.attachment_list_item, parent, false);
-        }
-
-        ImageView thumbnailView = (ImageView) convertView.findViewById(com.buglife.sdk.R.id.attachment_list_thumbnail);
-        TextView titleView = (TextView) convertView.findViewById(com.buglife.sdk.R.id.attachment_list_title);
-        FileAttachment attachment = getItem(position);
-
-        Context context = convertView.getContext();
         File file = attachment.getFile();
         if (attachment.isImage()) {
             String path = file.getAbsolutePath();
-            // TODO: Optimize bitmap decoding
-            Bitmap scaledBitmap = scaleBitmapForThumbnail(context, BitmapFactory.decodeFile(path));
-            thumbnailView.setImageBitmap(scaledBitmap);
+            Bitmap scaledBitmap = scaleBitmapForThumbnail(mContext, BitmapFactory.decodeFile(path));
+            viewHolder.thumbnailView.setImageBitmap(scaledBitmap);
+            viewHolder.thumbnailView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mItemClickListener != null) {
+                        mItemClickListener.itemClidk(position, attachment);
+                    }
+                }
+            });
         }
-        titleView.setText(file.getName());
+        viewHolder.titleView.setText(file.getName());
+    }
 
-        return convertView;
+    @Override
+    public int getItemCount() {
+        if (mDataSource != null)
+            return mDataSource.size();
+        return 0;
     }
 
     private Bitmap scaleBitmapForThumbnail(Context context, Bitmap bitmap) {
@@ -92,9 +97,29 @@ class AttachmentAdapter extends BaseAdapter {
         float aspectRatio = (float) originalWidth / (float) originalHeight;
 
         // 40dp width is the standard size for a row icon according to material design guidelines.
-        int scaledWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, context.getResources().getDisplayMetrics());
+        int scaledWidth = (int) TypedValue
+                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, context.getResources().getDisplayMetrics());
         int scaledHeight = (int) (scaledWidth / aspectRatio);
 
         return Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, false);
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        TextView titleView;
+        ImageView thumbnailView;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            titleView =  itemView.findViewById(R.id.attachment_list_title);
+            thumbnailView =  itemView.findViewById(R.id.attachment_list_thumbnail);
+        }
+    }
+
+    public void setItemListener(ItemClickListener itemListener) {
+        this.mItemClickListener = itemListener;
+    }
+
+    public interface ItemClickListener {
+        void itemClidk(int pistion, FileAttachment attachment);
     }
 }

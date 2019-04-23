@@ -17,29 +17,32 @@
 
 package com.buglife.sdk;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.*;
 
 import com.buglife.sdk.model.*;
 import com.buglife.sdk.reporting.CreateBugData;
@@ -48,11 +51,13 @@ import com.google.gson.Gson;
 import com.langlib.net.HttpCallback;
 import com.langlib.net.HttpTaskUtil;
 import com.langlib.utils.LogUtil;
+import me.nereo.multi_image_selector.MultiImageSelectorActivity;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,17 +67,21 @@ import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static com.buglife.sdk.ActivityUtils.INTENT_KEY_ATTACHMENT;
 import static com.buglife.sdk.ActivityUtils.INTENT_KEY_BUG_CONTEXT;
 
-public class ReportActivity extends AppCompatActivity {
+public class ReportActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int SEND_MENU_ITEM = 1;
+    private static final int REQUEST_IMAGE = 2;
 
     private BugContext mBugContext;
     private AttachmentAdapter mAttachmentAdapter;
-    private ListView mAttachmentListView;
-    private @NonNull List<InputField> mInputFields;
-    private @Nullable ProgressDialog mProgressDialog;
-    private @NonNull ColorPalette mColorPalette;
-
+    private RecyclerView mAttachmentListView;
+    private ImageView mAddIv; //添加图片按钮
+    private @NonNull
+    List<InputField> mInputFields;
+    private @Nullable
+    ProgressDialog mProgressDialog;
+    private @NonNull
+    ColorPalette mColorPalette;
 
     //所有用户
     private AllUserData mAllUserData;
@@ -84,7 +93,7 @@ public class ReportActivity extends AppCompatActivity {
 
     private PickerInputField mBugTypeField;//Bug类型
 
-    private PickerInputField mSeverityField ;//bug等级
+    private PickerInputField mSeverityField;//bug等级
 
     private PickerInputField mPriField;//优先级
 
@@ -105,7 +114,9 @@ public class ReportActivity extends AppCompatActivity {
 
         initModelData();
 
-        mAttachmentListView = (ListView) findViewById(R.id.attachment_list_view);
+        mAttachmentListView = findViewById(R.id.attachment_list_view);
+        mAddIv =  findViewById(R.id.add_iv);
+        mAddIv.setOnClickListener(this);
 
         Intent intent = getIntent();
         intent.setExtrasClassLoader(BugContext.class.getClassLoader());
@@ -113,15 +124,16 @@ public class ReportActivity extends AppCompatActivity {
 
         final List<FileAttachment> mediaAttachments = mBugContext.getMediaAttachments();
 
-        mAttachmentAdapter = new AttachmentAdapter(mediaAttachments);
-        mAttachmentListView.setAdapter(mAttachmentAdapter);
-        mAttachmentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mAttachmentAdapter = new AttachmentAdapter(this,mediaAttachments);
+        mAttachmentAdapter.setItemListener(new AttachmentAdapter.ItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FileAttachment attachment = mAttachmentAdapter.getItem(position);
+            public void itemClidk(int pistion,FileAttachment attachment) {
                 showActivityForAttachment(attachment);
             }
         });
+        mAttachmentListView.setLayoutManager(new LinearLayoutManager(this));
+        mAttachmentListView.setAdapter(mAttachmentAdapter);
+
 
         mColorPalette = new ColorPalette.Builder(this).build();
         int colorPrimary = mColorPalette.getColorPrimary();
@@ -134,7 +146,8 @@ public class ReportActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
 
         if (actionBar != null) {
-            Drawable drawable = ActivityUtils.getTintedDrawable(this, android.R.drawable.ic_menu_close_clear_cancel, mColorPalette.getTextColorPrimary());
+            Drawable drawable = ActivityUtils.getTintedDrawable(this, android.R.drawable.ic_menu_close_clear_cancel,
+                    mColorPalette.getTextColorPrimary());
 
             actionBar.setHomeAsUpIndicator(drawable);
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -147,68 +160,67 @@ public class ReportActivity extends AppCompatActivity {
         getAccountInfo();
     }
 
-    public void initModelData(){
+    public void initModelData() {
         mAllUserData = new AllUserData();
         mProjectsData = new ArrayList<>();
     }
 
-    public void initContentItem(){
+    public void initContentItem() {
 
         //问题描述
-        TextInputField titleTextIput = new TextInputField(ZentaoConstant.BUG_TITLE,false);
+        TextInputField titleTextIput = new TextInputField(ZentaoConstant.BUG_TITLE, false);
         titleTextIput.setTitle(getString(R.string.summary_field_title));
         titleTextIput.setMultiline(true);
 
         //重现步骤
-        TextInputField stepTextInput = new TextInputField(ZentaoConstant.BUG_STEPS,false);
+        TextInputField stepTextInput = new TextInputField(ZentaoConstant.BUG_STEPS, false);
         stepTextInput.setTitle(getString(R.string.setp_field_title));
         stepTextInput.setMultiline(true);
 
         //可分配的人
         mAssignedToField = new PickerInputField(ZentaoConstant.BUG_ASSIGNEDTO);
         mAssignedToField.setTitle("指派给");
-        for(AllUserItemData itemData : mAllUserData.getUserItemData()) {
-            if(!TextUtils.isEmpty(itemData.getValue())) {
+        for (AllUserItemData itemData : mAllUserData.getUserItemData()) {
+            if (!TextUtils.isEmpty(itemData.getValue())) {
                 mAssignedToField.addOption(itemData.getName(), itemData.getValue());
             }
         }
 
-
         //Bug类型
         mBugTypeField = new PickerInputField(ZentaoConstant.BUG_TYPE);
         mBugTypeField.setTitle("Bug类型");
-        for(BugTypeData bugTypeData : ZentaoConstant.bugTypeList()) {
-            mBugTypeField.addOption(bugTypeData.getDes(),bugTypeData.getBugCode());
+        for (BugTypeData bugTypeData : ZentaoConstant.bugTypeList()) {
+            mBugTypeField.addOption(bugTypeData.getDes(), bugTypeData.getBugCode());
         }
 
         //bug等级
         mSeverityField = new PickerInputField(ZentaoConstant.BUG_SEVERITY);
         mSeverityField.setTitle("严重程度");
-        for(String severity : ZentaoConstant.SEVERITY) {
+        for (String severity : ZentaoConstant.SEVERITY) {
             mSeverityField.addOption(severity);
         }
 
         //优先级
         mPriField = new PickerInputField(ZentaoConstant.BUG_PRI);
         mPriField.setTitle("优先级");
-        for(String severity : ZentaoConstant.PRI_TYPE) {
+        for (String severity : ZentaoConstant.PRI_TYPE) {
             mPriField.addOption(severity);
         }
 
         //版本
         PickerInputField projectsField = new PickerInputField(ZentaoConstant.BUG_PROJECTS);
         projectsField.setTitle("版本号");
-        for(ProjectsData data : mProjectsData) {
-            if(!TextUtils.isEmpty(data.getProjectsId())) {
+        for (ProjectsData data : mProjectsData) {
+            if (!TextUtils.isEmpty(data.getProjectsId())) {
                 projectsField.addOption(data.getProjectsDes(), data.getProjectsId());
             }
         }
 
-
-        Buglife.setInputFields(titleTextIput,stepTextInput,mAssignedToField,mSeverityField,mBugTypeField,mPriField,projectsField);
+        Buglife.setInputFields(titleTextIput, stepTextInput, mAssignedToField, mSeverityField, mBugTypeField, mPriField,
+                projectsField);
     }
 
-    public void initContentItemRes(){
+    public void initContentItemRes() {
         mInputFields = Buglife.getInputFields();
         ArrayList<InputFieldView> inputFieldViews = new ArrayList<>();
 
@@ -231,7 +243,8 @@ public class ReportActivity extends AppCompatActivity {
         }
     }
 
-    private @Nullable String getValueForInputField(@NonNull InputField inputField) {
+    private @Nullable
+    String getValueForInputField(@NonNull InputField inputField) {
         String attributeName = inputField.getAttributeName();
         Attribute attribute = mBugContext.getAttribute(attributeName);
         return attribute == null ? null : attribute.getValue();
@@ -246,7 +259,8 @@ public class ReportActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuItem sendItem = menu.add(0, SEND_MENU_ITEM, Menu.NONE, R.string.send);
         sendItem.setShowAsAction(SHOW_AS_ACTION_ALWAYS);
-        Drawable drawable = ActivityUtils.getTintedDrawable(this, android.R.drawable.ic_menu_send, mColorPalette.getTextColorPrimary());
+        Drawable drawable = ActivityUtils
+                .getTintedDrawable(this, android.R.drawable.ic_menu_send, mColorPalette.getTextColorPrimary());
         sendItem.setIcon(drawable);
 
         return true;
@@ -260,8 +274,8 @@ public class ReportActivity extends AppCompatActivity {
                 return true;
             case SEND_MENU_ITEM:
                 submitReport();
-//                getAllUser();
-//                getAccountInfo();
+                //                getAllUser();
+                //                getAccountInfo();
                 return true;
         }
 
@@ -294,6 +308,16 @@ public class ReportActivity extends AppCompatActivity {
         if (requestCode == ScreenshotAnnotatorActivity.REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 mAttachmentAdapter.notifyDataSetChanged();
+            }
+        } else if (requestCode == REQUEST_IMAGE) {
+            if (resultCode == RESULT_OK) {
+                List<String> path = data.getStringArrayListExtra(MultiImageSelectorActivity.EXTRA_RESULT);
+                for (String filePath : path) {
+                    File file = new File(filePath);
+                    mBugContext.addAttachment(new FileAttachment(file, MimeTypes.PNG));
+                }
+                final List<FileAttachment> mediaAttachments = mBugContext.getMediaAttachments();
+                mAttachmentAdapter.setAttachments(mediaAttachments);
             }
         }
     }
@@ -350,7 +374,6 @@ public class ReportActivity extends AppCompatActivity {
         });
     }
 
-
     private void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = ProgressDialog.show(this, getString(R.string.sending_toast), "");
@@ -371,12 +394,13 @@ public class ReportActivity extends AppCompatActivity {
         alertDialog.setMessage(message);
         alertDialog.setCancelable(false);
 
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                alertDialog.dismiss();
-            }
-        });
+        alertDialog
+                .setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.dismiss();
+                    }
+                });
 
         alertDialog.show();
     }
@@ -384,17 +408,17 @@ public class ReportActivity extends AppCompatActivity {
     //获取bug的所有信息
     private void getAccountInfo() {
 
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "" ,new HttpCallback<BaseBody>(){
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "", new HttpCallback<BaseBody>() {
 
             @Override
             public void onSuccess(BaseBody body) {
-                BaseBody baseBody  = body;
+                BaseBody baseBody = body;
 
                 Gson gson = new Gson();
-                mAccountInfo = gson.fromJson(body.getData(),AccountInfo.class);
+                mAccountInfo = gson.fromJson(body.getData(), AccountInfo.class);
 
                 Map<String, String> products = mAccountInfo.getProjects(); //对动态的key，来创建map，间接从中取出实体类futrue。
-                for (String key:products.keySet()){                        //遍历取出key，再遍历map取出value。
+                for (String key : products.keySet()) {                        //遍历取出key，再遍历map取出value。
 
                     ProjectsData projectsData = new ProjectsData();
                     projectsData.setProjectsId(key);
@@ -403,14 +427,13 @@ public class ReportActivity extends AppCompatActivity {
                 }
 
                 Map<String, String> account = mAccountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。
-                for (String key:account.keySet()){                        //遍历取出key，再遍历map取出value。
+                for (String key : account.keySet()) {                        //遍历取出key，再遍历map取出value。
 
                     AllUserItemData userItemData = new AllUserItemData();
                     userItemData.setValue(key);
                     userItemData.setName(account.get(key));
                     mAllUserData.add(userItemData);
                 }
-
 
                 //初始化界面
                 initContentItem();
@@ -422,16 +445,16 @@ public class ReportActivity extends AppCompatActivity {
             public void onError(String errorMsg) {
                 super.onError(errorMsg);
             }
-        },BaseBody.class);
+        }, BaseBody.class);
 
     }
 
     //获取所有用户
-    public void getAllUser(){
+    public void getAllUser() {
 
         mAllUserData.getUserItemData().clear();
 
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.LOAD_ALL_USERS, "",new HttpCallback<String>(){
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.LOAD_ALL_USERS, "", new HttpCallback<String>() {
 
             @Override
             public void onSuccess(String htmlString) {
@@ -440,12 +463,11 @@ public class ReportActivity extends AppCompatActivity {
                 Document document = Jsoup.parse(htmlString);
                 Elements elements = document.getElementsByTag("option");
 
-
                 //遍历Elements,解析其标签
                 for (Element title : elements) {
                     Log.d("title = " + title.text() + " " + title.val());
 
-                    if(!TextUtils.isEmpty(title.val())) {
+                    if (!TextUtils.isEmpty(title.val())) {
                         AllUserItemData itemData = new AllUserItemData();
                         itemData.setValue(title.val());
                         itemData.setName(title.text());
@@ -458,26 +480,81 @@ public class ReportActivity extends AppCompatActivity {
                 initContentItemRes();
 
             }
+
             @Override
             public void onError(String errorMsg) {
                 Log.i("uploadData() onError() errorMsg = " + errorMsg);
             }
-        },String.class);
+        }, String.class);
     }
+
     //获取Bug严重程度列表
-    public void getSeverityList(){
+    public void getSeverityList() {
 
-
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.SEVERITY_LIST, "",new HttpCallback<Severity>(){
+        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.SEVERITY_LIST, "", new HttpCallback<Severity>() {
 
             @Override
             public void onSuccess(Severity severity) {
             }
+
             @Override
             public void onError(String errorMsg) {
                 Log.i("uploadData() onError() errorMsg = " + errorMsg);
             }
-        },Severity.class);
+        }, Severity.class);
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        switch (requestCode) {
+            //就像onActivityResult一样这个地方就是判断你是从哪来的。
+            case REQUEST_IMAGE:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openMultiImageSelector();
+                } else {
+                    Toast.makeText(ReportActivity.this, "很遗憾你没有权限。", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+
+        int i = view.getId();
+        if (i == R.id.add_iv) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                setPermission();
+            }else {
+                openMultiImageSelector();
+            }
+
+        }
+    }
+
+    public void openMultiImageSelector() {
+        ArrayList<String> defaultDataArray = new ArrayList<>();
+        Intent intent = new Intent(this, MultiImageSelectorActivity.class);
+        intent.putExtra(MultiImageSelectorActivity.EXTRA_SHOW_CAMERA, true);
+        intent.putExtra(MultiImageSelectorActivity.EXTRA_SELECT_COUNT, 9);
+        intent.putExtra(MultiImageSelectorActivity.EXTRA_SELECT_MODE, MultiImageSelectorActivity.MODE_MULTI);
+        intent.putStringArrayListExtra(MultiImageSelectorActivity.EXTRA_DEFAULT_SELECTED_LIST, defaultDataArray);
+        startActivityForResult(intent, REQUEST_IMAGE);
+    }
+
+    public void setPermission() {
+        String[] mPermissionList =
+                new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_LOGS, Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SET_DEBUG_APP,
+                        Manifest.permission.SYSTEM_ALERT_WINDOW,
+                        Manifest.permission.WRITE_APN_SETTINGS };
+        ActivityCompat.requestPermissions(this, mPermissionList, REQUEST_IMAGE);
+
+    }
+
 }
 
