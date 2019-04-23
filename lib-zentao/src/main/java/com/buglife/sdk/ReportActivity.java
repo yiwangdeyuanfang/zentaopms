@@ -47,6 +47,8 @@ import android.widget.*;
 import com.buglife.sdk.model.*;
 import com.buglife.sdk.reporting.CreateBugData;
 import com.buglife.sdk.reporting.ReportSubmissionCallback;
+import com.buglife.sdk.view.IReportPresenterView;
+import com.buglife.sdk.view.ReportPresenter;
 import com.google.gson.Gson;
 import com.langlib.net.HttpCallback;
 import com.langlib.net.HttpTaskUtil;
@@ -67,7 +69,7 @@ import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static com.buglife.sdk.ActivityUtils.INTENT_KEY_ATTACHMENT;
 import static com.buglife.sdk.ActivityUtils.INTENT_KEY_BUG_CONTEXT;
 
-public class ReportActivity extends AppCompatActivity implements View.OnClickListener {
+public class ReportActivity extends AppCompatActivity implements View.OnClickListener, IReportPresenterView {
 
     private static final int SEND_MENU_ITEM = 1;
     private static final int REQUEST_IMAGE = 2;
@@ -83,6 +85,8 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     private @NonNull
     ColorPalette mColorPalette;
 
+
+    private ZentaoConfigData mZentaoConfigData;
     //所有用户
     private AllUserData mAllUserData;
 
@@ -96,6 +100,9 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     private PickerInputField mSeverityField;//bug等级
 
     private PickerInputField mPriField;//优先级
+
+
+    private ReportPresenter mReportPresenter;
 
     public static Intent newStartIntent(Context context, BugContext bugContext) {
         Intent intent = new Intent(context, ReportActivity.class);
@@ -111,6 +118,8 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report);
+
+        mReportPresenter = new ReportPresenter(this);
 
         initModelData();
 
@@ -157,7 +166,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
         ActivityUtils.setStatusBarColor(this, mColorPalette.getColorPrimaryDark());
 
-        getAccountInfo();
+        mReportPresenter.getZentaoConfig();
     }
 
     public void initModelData() {
@@ -274,8 +283,6 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
                 return true;
             case SEND_MENU_ITEM:
                 submitReport();
-                //                getAllUser();
-                //                getAccountInfo();
                 return true;
         }
 
@@ -405,104 +412,6 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         alertDialog.show();
     }
 
-    //获取bug的所有信息
-    private void getAccountInfo() {
-
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "", new HttpCallback<BaseBody>() {
-
-            @Override
-            public void onSuccess(BaseBody body) {
-                BaseBody baseBody = body;
-
-                Gson gson = new Gson();
-                mAccountInfo = gson.fromJson(body.getData(), AccountInfo.class);
-
-                Map<String, String> products = mAccountInfo.getProjects(); //对动态的key，来创建map，间接从中取出实体类futrue。
-                for (String key : products.keySet()) {                        //遍历取出key，再遍历map取出value。
-
-                    ProjectsData projectsData = new ProjectsData();
-                    projectsData.setProjectsId(key);
-                    projectsData.setProjectsDes(products.get(key));
-                    mProjectsData.add(projectsData);
-                }
-
-                Map<String, String> account = mAccountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。
-                for (String key : account.keySet()) {                        //遍历取出key，再遍历map取出value。
-
-                    AllUserItemData userItemData = new AllUserItemData();
-                    userItemData.setValue(key);
-                    userItemData.setName(account.get(key));
-                    mAllUserData.add(userItemData);
-                }
-
-                //初始化界面
-                initContentItem();
-
-                initContentItemRes();
-            }
-
-            @Override
-            public void onError(String errorMsg) {
-                super.onError(errorMsg);
-            }
-        }, BaseBody.class);
-
-    }
-
-    //获取所有用户
-    public void getAllUser() {
-
-        mAllUserData.getUserItemData().clear();
-
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.LOAD_ALL_USERS, "", new HttpCallback<String>() {
-
-            @Override
-            public void onSuccess(String htmlString) {
-                Log.i("uploadData() getAllUser() s = " + htmlString);
-
-                Document document = Jsoup.parse(htmlString);
-                Elements elements = document.getElementsByTag("option");
-
-                //遍历Elements,解析其标签
-                for (Element title : elements) {
-                    Log.d("title = " + title.text() + " " + title.val());
-
-                    if (!TextUtils.isEmpty(title.val())) {
-                        AllUserItemData itemData = new AllUserItemData();
-                        itemData.setValue(title.val());
-                        itemData.setName(title.text());
-                        mAllUserData.add(itemData);
-                    }
-                }
-
-                initContentItem();
-
-                initContentItemRes();
-
-            }
-
-            @Override
-            public void onError(String errorMsg) {
-                Log.i("uploadData() onError() errorMsg = " + errorMsg);
-            }
-        }, String.class);
-    }
-
-    //获取Bug严重程度列表
-    public void getSeverityList() {
-
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.SEVERITY_LIST, "", new HttpCallback<Severity>() {
-
-            @Override
-            public void onSuccess(Severity severity) {
-            }
-
-            @Override
-            public void onError(String errorMsg) {
-                Log.i("uploadData() onError() errorMsg = " + errorMsg);
-            }
-        }, Severity.class);
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -556,5 +465,52 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
+    @Override
+    public void setZentaoConfig(ZentaoConfigData zentaoConfig) {
+
+        //TODO 登录弹窗
+
+        mReportPresenter.loginZentao(zentaoConfig.getSessionID(),"zhangyueli","Zyl123456");
+    }
+
+    @Override
+    public void loginFail() {
+        //TODO 如果登录失败 再次弹窗登录弹窗
+    }
+
+    @Override
+    public void setBugAllInfo(AccountInfo accountInfo) {
+        Map<String, String> products = accountInfo.getProjects(); //对动态的key，来创建map，间接从中取出实体类futrue。
+        for (String key : products.keySet()) {                        //遍历取出key，再遍历map取出value。
+
+            ProjectsData projectsData = new ProjectsData();
+            projectsData.setProjectsId(key);
+            projectsData.setProjectsDes(products.get(key));
+            mProjectsData.add(projectsData);
+        }
+
+        Map<String, String> account = mAccountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。
+        for (String key : account.keySet()) {                        //遍历取出key，再遍历map取出value。
+
+            AllUserItemData userItemData = new AllUserItemData();
+            userItemData.setValue(key);
+            userItemData.setName(account.get(key));
+            mAllUserData.add(userItemData);
+        }
+
+        //初始化界面
+        initContentItem();
+
+        initContentItemRes();
+    }
+
+    @Override
+    public void setAllUserData(AllUserData allUserData) {
+        mAllUserData =  allUserData;
+
+//        initContentItem();
+//
+//        initContentItemRes();;
+    }
 }
 
