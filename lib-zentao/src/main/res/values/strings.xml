@@ -23,4 +23,5 @@
     <string name="error_save_screenshot">There was an error saving screenshot!</string>
     <string name="summary_field_title">问题描述</string>
     <string name="setp_field_title">重现步骤</string>
+    <string name="float_window_permission_denied_overlay">当前无权限，请授权</string>
 </resources>

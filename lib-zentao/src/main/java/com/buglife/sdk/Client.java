@@ -33,6 +33,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
+import com.buglife.sdk.floatintinterface.FloatWindowPermissionHelper;
+import com.buglife.sdk.floatintinterface.FloatingButtonService;
 import com.buglife.sdk.reporting.BugReporter;
 import com.buglife.sdk.reporting.ClientEventReporter;
 import com.buglife.sdk.reporting.ReportSubmissionCallback;
@@ -271,6 +273,10 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
         }
     }
 
+    void showFloatWindow(){
+        showFloatWindowFlow();
+    }
+
     void startScreenRecording() {
         startScreenRecordingFlow();
     }
@@ -367,6 +373,43 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
         alertDialog.show();
     }
 
+    private void showFloatWindowFlow() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            Toast.makeText(mAppContext, R.string.float_window_permission_denied_overlay, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Activity currentActivity = mForegroundDetector.getCurrentActivity();
+        FragmentManager fragmentManager = currentActivity.getFragmentManager();
+        FloatWindowPermissionHelper permissionHelper = (FloatWindowPermissionHelper) fragmentManager.findFragmentByTag(FloatWindowPermissionHelper.TAG);
+
+        if (permissionHelper == null) {
+            permissionHelper = FloatWindowPermissionHelper.newInstance();
+            permissionHelper.setPermissionCallback(new FloatWindowPermissionHelper.PermissionCallback() {
+                @Override
+                public void onPermissionGranted(int resultCode, Intent data) {
+                    startFoatWindowFlow();
+                }
+
+                @Override
+                public void onPermissionDenied(FloatWindowPermissionHelper.PermissionType permissionType) {
+                    int toastStringResId = 0;
+
+                    switch (permissionType) {
+                        case OVERLAY:
+                            toastStringResId = R.string.screen_recording_permission_denied_overlay;
+                            break;
+                    }
+
+                    if (toastStringResId != 0) {
+                        Toast.makeText(mAppContext, toastStringResId, Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+            fragmentManager.beginTransaction().add(permissionHelper, PermissionHelper.TAG).commit();
+        }
+    }
+
     private void startScreenRecordingFlow() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Toast.makeText(mAppContext, R.string.screen_recording_minimum_os_error, Toast.LENGTH_LONG).show();
@@ -418,6 +461,11 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
             }
         });
         screenRecorder.start();
+    }
+
+    private void startFoatWindowFlow(){
+        Activity activity = mForegroundDetector.getCurrentActivity();
+        activity.startService(new Intent(activity, FloatingButtonService.class));
     }
 
     private void startBuglifeActivity(Intent intent) {

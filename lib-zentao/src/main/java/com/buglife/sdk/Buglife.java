@@ -206,6 +206,11 @@ public final class Buglife {
         getClient().showReporter();
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
+    public static void showFloatWindow() {
+        getClient().showFloatWindow();
+    }
+
     /**
      * Manually starts the screen recording flow; users can record up to 30 seconds, or tap
      * the record button to stop recording early. Once screen recording has been
