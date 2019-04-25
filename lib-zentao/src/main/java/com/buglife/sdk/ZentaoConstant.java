@@ -17,7 +17,7 @@ public class ZentaoConstant {
 
     public static final String ZENTAO_CONFIG_URL = ZENTAO_URL + "/index.php?mode=getconfig";
     public static final String LOGIN_URL = ZENTAO_URL + "/index.php?m=user&f=login&t=json&zentaosid=%s";
-    public static final String ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=1&zentaosid=5nk9viec8fk6nithsv3trq3690";
+    public static final String ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=1&zentaosid=%s";
     public static final String LOAD_ALL_USERS = ZENTAO_URL + "/index.php?m=bug&f=ajaxLoadAllUsers&t=json&zentaosid=5nk9viec8fk6nithsv3trq3690";
     public static final String SEVERITY_LIST = ZENTAO_URL + "/index.php?m=custom&f=set&module=bug&t=json&field=severityList&zentaosid=5nk9viec8fk6nithsv3trq3690";
     public static final String PROJECTS_LIST = ZENTAO_URL + "/index.php?m=project&f=team&t=json&projectID=1&zentaosid=5nk9viec8fk6nithsv3trq3690";

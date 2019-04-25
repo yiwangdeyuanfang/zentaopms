@@ -470,7 +470,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
         //TODO 登录弹窗
 
-        mReportPresenter.loginZentao(zentaoConfig.getSessionID(),"zhangyueli","Zyl123456");
+        mReportPresenter.loginZentao("zhangyueli","Zyl123456",zentaoConfig.getSessionID());
     }
 
     @Override

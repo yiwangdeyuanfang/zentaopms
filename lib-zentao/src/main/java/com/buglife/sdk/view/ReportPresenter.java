@@ -53,15 +53,15 @@ public class ReportPresenter {
         }, String.class);
     }
 
-    public void loginZentao(String account, String password, String sessionId){
+    public void loginZentao(String account, String password, final String sessionId){
         String url = String.format(ZentaoConstant.LOGIN_URL, sessionId);
 
         LoginData loginData = new LoginData();
         loginData.setAccount(account);
         loginData.setPassword(password);
-        loginData.setZentaosid(sessionId);
+//        loginData.setZentaosid(sessionId);
 
-        HttpTaskUtil.getTask().reqHttpPost(new Gson().toJson(loginData), url, new HttpCallback<String>() {
+        HttpTaskUtil.getTask().reqHttpPost(url, new Gson().toJson(loginData), new HttpCallback<String>() {
 
             @Override
             public void onSuccess(String loginStr) {
@@ -70,7 +70,7 @@ public class ReportPresenter {
                 if(loginStr.contains("登录失败") || loginStr.contains("failed")){
                     mView.loginFail();
                 }else { //登录成功后，获取bug信息
-                    getBugAllInfo();
+                    getBugAllInfo(sessionId);
                 }
 
             }
@@ -83,9 +83,10 @@ public class ReportPresenter {
     }
 
     //获取bug的所有信息
-    public void getBugAllInfo() {
+    public void getBugAllInfo(String sessionId) {
+        String url = String.format(ZentaoConstant.LOGIN_URL, sessionId);
 
-        HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_REPORT_URL, "", new HttpCallback<BaseBody>() {
+        HttpTaskUtil.getTask().reqHttpPost(url, "", new HttpCallback<BaseBody>() {
 
             @Override
             public void onSuccess(BaseBody body) {
