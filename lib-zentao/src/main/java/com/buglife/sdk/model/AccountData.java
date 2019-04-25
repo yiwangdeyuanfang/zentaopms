@@ -1,18 +1,14 @@
 package com.buglife.sdk.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
  * @author zhangyueli
  * @date 2019/4/18
  * Bug类型
  */
-public class LoginData {
+public class AccountData {
 
     private String account;
     private String password;
-    private String zentaosid;
     private boolean keepLogin;
 
     public String getAccount() {
@@ -31,15 +27,7 @@ public class LoginData {
         this.password = password;
     }
 
-    public String getZentaosid() {
-        return zentaosid;
-    }
-
-    public void setZentaosid(String zentaosid) {
-        this.zentaosid = zentaosid;
-    }
-
-    public boolean isKeepLogin() {
+    public boolean getKeepLogin() {
         return keepLogin;
     }
 

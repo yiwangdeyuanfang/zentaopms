@@ -45,19 +45,10 @@ import android.view.View;
 import android.widget.*;
 
 import com.buglife.sdk.model.*;
-import com.buglife.sdk.reporting.CreateBugData;
 import com.buglife.sdk.reporting.ReportSubmissionCallback;
 import com.buglife.sdk.view.IReportPresenterView;
 import com.buglife.sdk.view.ReportPresenter;
-import com.google.gson.Gson;
-import com.langlib.net.HttpCallback;
-import com.langlib.net.HttpTaskUtil;
-import com.langlib.utils.LogUtil;
 import me.nereo.multi_image_selector.MultiImageSelectorActivity;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -90,7 +81,6 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     //所有用户
     private AllUserData mAllUserData;
 
-    private AccountInfo mAccountInfo;
     private List<ProjectsData> mProjectsData;
 
     private PickerInputField mAssignedToField; //可分配的人
@@ -118,8 +108,6 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report);
-
-        mReportPresenter = new ReportPresenter(this);
 
         initModelData();
 
@@ -166,7 +154,11 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
         ActivityUtils.setStatusBarColor(this, mColorPalette.getColorPrimaryDark());
 
-        mReportPresenter.getZentaoConfig();
+
+        mReportPresenter = new ReportPresenter(this,Buglife.getProductId());
+
+        mReportPresenter.getZentaoConfig(this);
+//        mReportPresenter.logoutZentao(this);
     }
 
     public void initModelData() {
@@ -479,7 +471,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    public void setBugAllInfo(AccountInfo accountInfo) {
+    public void setBugAllInfo(BugInfo accountInfo) {
         Map<String, String> products = accountInfo.getProjects(); //对动态的key，来创建map，间接从中取出实体类futrue。
         for (String key : products.keySet()) {                        //遍历取出key，再遍历map取出value。
 
@@ -489,7 +481,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
             mProjectsData.add(projectsData);
         }
 
-        Map<String, String> account = mAccountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。
+        Map<String, String> account = accountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。
         for (String key : account.keySet()) {                        //遍历取出key，再遍历map取出value。
 
             AllUserItemData userItemData = new AllUserItemData();

@@ -1,6 +1,6 @@
 package com.buglife.sdk.view;
 
-import com.buglife.sdk.model.AccountInfo;
+import com.buglife.sdk.model.BugInfo;
 import com.buglife.sdk.model.AllUserData;
 import com.buglife.sdk.model.ZentaoConfigData;
 
@@ -14,7 +14,7 @@ public interface IReportPresenterView {
 
     void loginFail();
 
-    void setBugAllInfo(AccountInfo accountInfo);
+    void setBugAllInfo(BugInfo accountInfo);
 
     void setAllUserData(AllUserData allUserData);
 }

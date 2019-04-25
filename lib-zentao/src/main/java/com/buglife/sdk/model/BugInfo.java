@@ -14,7 +14,7 @@ import java.util.List;
  * @date 2019/4/18
  *
  */
-public class AccountInfo  implements Parcelable {
+public class BugInfo implements Parcelable {
 
     private String title;
 
@@ -42,7 +42,7 @@ public class AccountInfo  implements Parcelable {
     private String type;
     private String assignedTo;
 
-    protected AccountInfo(Parcel in) {
+    protected BugInfo(Parcel in) {
         title = in.readString();
         productID = in.readInt();
         moduleOptionMenu = in.createStringArrayList();
@@ -56,15 +56,15 @@ public class AccountInfo  implements Parcelable {
         assignedTo = in.readString();
     }
 
-    public static final Creator<AccountInfo> CREATOR = new Creator<AccountInfo>() {
+    public static final Creator<BugInfo> CREATOR = new Creator<BugInfo>() {
         @Override
-        public AccountInfo createFromParcel(Parcel in) {
-            return new AccountInfo(in);
+        public BugInfo createFromParcel(Parcel in) {
+            return new BugInfo(in);
         }
 
         @Override
-        public AccountInfo[] newArray(int size) {
-            return new AccountInfo[size];
+        public BugInfo[] newArray(int size) {
+            return new BugInfo[size];
         }
     };
 

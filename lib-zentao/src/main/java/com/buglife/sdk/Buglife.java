@@ -78,6 +78,14 @@ public final class Buglife {
         return getClient().getInvocationMethod();
     }
 
+    public static void setProductId(String productId) {
+        getClient().setProductId(productId);
+    }
+
+    public static String getProductId() {
+        return getClient().getProductId();
+    }
+
     /**
      * Specifies a user identifier that will be submitted with bug reports. This can be a name,
      * database identifier, or any other string of your choosing.

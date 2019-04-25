@@ -15,12 +15,16 @@ public class ZentaoConstant {
 
     public static final String ZENTAO_URL = "http://192.168.80.30/zentaopms/www";
 
+    public static final String APP_NAME = "zentao";
+
     public static final String ZENTAO_CONFIG_URL = ZENTAO_URL + "/index.php?mode=getconfig";
-    public static final String LOGIN_URL = ZENTAO_URL + "/index.php?m=user&f=login&t=json&zentaosid=%s";
-    public static final String ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=1&zentaosid=%s";
-    public static final String LOAD_ALL_USERS = ZENTAO_URL + "/index.php?m=bug&f=ajaxLoadAllUsers&t=json&zentaosid=5nk9viec8fk6nithsv3trq3690";
-    public static final String SEVERITY_LIST = ZENTAO_URL + "/index.php?m=custom&f=set&module=bug&t=json&field=severityList&zentaosid=5nk9viec8fk6nithsv3trq3690";
-    public static final String PROJECTS_LIST = ZENTAO_URL + "/index.php?m=project&f=team&t=json&projectID=1&zentaosid=5nk9viec8fk6nithsv3trq3690";
+    public static final String LOGIN_URL = ZENTAO_URL + "/index.php?m=user&f=login&t=json&zentaosid=%s&account=%s&password=%s&keepLogin=%s";
+    public static final String LOGOUT_URL = ZENTAO_URL + "/index.php?m=user&f=logout&t=json";
+    public static final String ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=%s&zentaosid=%s";
+    public static final String LOAD_ALL_USERS = ZENTAO_URL + "/index.php?m=bug&f=ajaxLoadAllUsers&t=json&zentaosid=%s";
+    public static final String SEVERITY_LIST = ZENTAO_URL + "/index.php?m=custom&f=set&module=bug&t=json&field=severityList&zentaosid=%s";
+    public static final String PRODUCTS_LIST = ZENTAO_URL + "/index.php?m=product&f=all&t=json";
+    public static final String PROJECTS_LIST = ZENTAO_URL + "/index.php?m=project&f=team&t=json&projectID=1&zentaosid=%s";
 
     //严重等级
     public static String[] SEVERITY = {"1","2","3","4"};
@@ -64,4 +68,8 @@ public class ZentaoConstant {
     public static String BUG_STEPS = "steps";
     public static String BUG_OS = "os";                    //操作系统
     public static String BUG_PRI = "pri";                  //优先级
+
+
+    public static String SESSION_ID = "sessionId";  //
+
 }
