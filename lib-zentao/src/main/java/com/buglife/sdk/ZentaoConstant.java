@@ -72,4 +72,6 @@ public class ZentaoConstant {
 
     public static String SESSION_ID = "sessionId";  //
 
+    public static final String LOGIN = "LOGIN";
+
 }

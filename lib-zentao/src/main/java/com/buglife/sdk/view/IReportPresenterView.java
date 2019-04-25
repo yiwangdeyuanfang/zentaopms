@@ -12,7 +12,7 @@ public interface IReportPresenterView {
 
     void setZentaoConfig(ZentaoConfigData zentaoConfig);
 
-    void loginFail();
+    void loginFail(String sessionId);
 
     void setBugAllInfo(BugInfo accountInfo);
 

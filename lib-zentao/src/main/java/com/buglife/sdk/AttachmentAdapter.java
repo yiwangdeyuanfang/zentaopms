@@ -76,7 +76,7 @@ class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolde
                 @Override
                 public void onClick(View view) {
                     if (mItemClickListener != null) {
-                        mItemClickListener.itemClidk(position, attachment);
+                        mItemClickListener.itemClick(position, attachment);
                     }
                 }
             });
@@ -120,6 +120,6 @@ class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolde
     }
 
     public interface ItemClickListener {
-        void itemClidk(int pistion, FileAttachment attachment);
+        void itemClick(int pistion, FileAttachment attachment);
     }
 }

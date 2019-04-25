@@ -124,7 +124,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         mAttachmentAdapter = new AttachmentAdapter(this,mediaAttachments);
         mAttachmentAdapter.setItemListener(new AttachmentAdapter.ItemClickListener() {
             @Override
-            public void itemClidk(int pistion,FileAttachment attachment) {
+            public void itemClick(int pistion,FileAttachment attachment) {
                 showActivityForAttachment(attachment);
             }
         });
@@ -155,7 +155,7 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         ActivityUtils.setStatusBarColor(this, mColorPalette.getColorPrimaryDark());
 
 
-        mReportPresenter = new ReportPresenter(this,Buglife.getProductId());
+        mReportPresenter = new ReportPresenter(this,this,Buglife.getProductId());
 
         mReportPresenter.getZentaoConfig(this);
 //        mReportPresenter.logoutZentao(this);
@@ -436,6 +436,17 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    public void showLoginDialog(final String sessionId){
+        final LoginDialog loginDialog = new LoginDialog(this);
+        loginDialog.showDialog();
+        loginDialog.setLoginClickListener(new LoginDialog.OnLoginClickListener() {
+            @Override
+            public void onLoginClick(String userName, String password) {
+                mReportPresenter.loginZentao(userName,password,sessionId);
+            }
+        });
+    }
+
     public void openMultiImageSelector() {
         ArrayList<String> defaultDataArray = new ArrayList<>();
         Intent intent = new Intent(this, MultiImageSelectorActivity.class);
@@ -458,16 +469,16 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    public void setZentaoConfig(ZentaoConfigData zentaoConfig) {
+    public void setZentaoConfig(final ZentaoConfigData zentaoConfig) {
 
-        //TODO 登录弹窗
+        showLoginDialog(zentaoConfig.getSessionID());
 
-        mReportPresenter.loginZentao("zhangyueli","Zyl123456",zentaoConfig.getSessionID());
     }
 
     @Override
-    public void loginFail() {
-        //TODO 如果登录失败 再次弹窗登录弹窗
+    public void loginFail(String sessionId) {
+
+        showLoginDialog(sessionId);
     }
 
     @Override

@@ -26,13 +26,16 @@ import java.util.Map;
  */
 public class ReportPresenter {
 
+    private Context mContext;
+
     private IReportPresenterView mView;
 
     private String mSessionId;
 
     private String mProductID;
 
-    public ReportPresenter(IReportPresenterView view, String productID){
+    public ReportPresenter(Context context, IReportPresenterView view, String productID){
+        mContext = context;
         mView = view;
         mSessionId = "";
         mProductID = productID;
@@ -45,7 +48,14 @@ public class ReportPresenter {
 
         if(!TextUtils.isEmpty(sessionId)){ //sessionId不为空时，说明登录过，不用再次登录
             mSessionId = sessionId;
-            getBugAllInfo(sessionId);
+
+            SharedPreferences loginSp = context.getSharedPreferences(ZentaoConstant.APP_NAME, Context.MODE_PRIVATE);
+            boolean login = loginSp.getBoolean(ZentaoConstant.LOGIN,false);
+            if(login) {
+                getBugAllInfo(sessionId);
+            }else {
+                mView.loginFail(mSessionId);
+            }
         }else {
 
             HttpTaskUtil.getTask().reqHttpPost(ZentaoConstant.ZENTAO_CONFIG_URL, "", new HttpCallback<String>() {
@@ -90,10 +100,15 @@ public class ReportPresenter {
                 Log.i("loginZentao() loginStr = " + loginStr);
 
                 if(loginStr.contains("登录失败") || loginStr.contains("failed") || !loginStr.contains("user")){
-                    mView.loginFail();
+                    mView.loginFail(sessionId);
+                    SharedPreferences sp = mContext.getSharedPreferences(ZentaoConstant.APP_NAME, Context.MODE_PRIVATE);
+                    sp.edit().putBoolean(ZentaoConstant.LOGIN,false).commit();
                 }else { //登录成功后，获取bug信息
 
                     getBugAllInfo(sessionId);
+
+                    SharedPreferences sp = mContext.getSharedPreferences(ZentaoConstant.APP_NAME, Context.MODE_PRIVATE);
+                    sp.edit().putBoolean(ZentaoConstant.LOGIN,true).commit();
                 }
 
             }
