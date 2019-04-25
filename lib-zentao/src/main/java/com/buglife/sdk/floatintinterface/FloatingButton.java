@@ -17,16 +17,14 @@
 
 package com.buglife.sdk.floatintinterface;
 
-import android.animation.*;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
@@ -38,10 +36,12 @@ import com.buglife.sdk.R;
 import com.buglife.sdk.ViewUtils;
 
 public class FloatingButton extends LinearLayout {
+
+
     private final Paint mRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF mRingBounds = new RectF();
-    private final AnimatorSet mInAnimator = new AnimatorSet();
-    private final AnimatorSet mOutAnimator = new AnimatorSet();
+//    private final AnimatorSet mInAnimator = new AnimatorSet();
+//    private final AnimatorSet mOutAnimator = new AnimatorSet();
     private WindowManager mWindowManager;
     private FloatingButtonMovementHandler mMovementHandler;
 
@@ -50,6 +50,7 @@ public class FloatingButton extends LinearLayout {
 
     public FloatingButton(Context context) {
         this(context, null);
+
     }
 
     public FloatingButton(Context context, AttributeSet attrs) {
@@ -71,23 +72,13 @@ public class FloatingButton extends LinearLayout {
         });
 
         setBackgroundResource(R.drawable.bg_circle);
-        int backgroundColor = Color.parseColor("#F44336");
+        int backgroundColor = Color.parseColor("#cc1890FF");
         ViewCompat.setBackgroundTintList(this, ColorStateList.valueOf(backgroundColor));
         ViewCompat.setElevation(this, ViewUtils.dpToPx(4, getResources()));
 
-        ObjectAnimator inAnimationX = ObjectAnimator.ofFloat(this, View.SCALE_X, 0, 1);
-        ObjectAnimator inAnimationY = ObjectAnimator.ofFloat(this, View.SCALE_Y, 0, 1);
-        ObjectAnimator outAnimationX = ObjectAnimator.ofFloat(this, View.SCALE_X, 1, 0);
-        ObjectAnimator outAnimationY = ObjectAnimator.ofFloat(this, View.SCALE_Y, 1, 0);
-        mInAnimator.playTogether(inAnimationX, inAnimationY);
-        mOutAnimator.playTogether(outAnimationX, outAnimationY);
 
         mWindowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         mMovementHandler = new FloatingButtonMovementHandler(this, mWindowManager);
-    }
-
-    public void setCountdownDuration(long duration) {
-        mRingAnimator.setDuration(duration);
     }
 
     @Override public boolean onTouchEvent(MotionEvent event) {
@@ -102,14 +93,6 @@ public class FloatingButton extends LinearLayout {
 
     @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        // Set the bounds of the ring to sit nicely inside of the button
-        float inset = mRingPaint.getStrokeWidth() / 2;
-        mRingBounds.set(
-                inset,
-                inset,
-                getMeasuredWidth() - inset,
-                getMeasuredHeight() - inset
-        );
 
         DisplayMetrics dm = getResources().getDisplayMetrics();
         int leftMovementBound = -(getMeasuredWidth() / 2);
@@ -130,8 +113,6 @@ public class FloatingButton extends LinearLayout {
                 params.y = (dm.heightPixels / 2) - (getMeasuredHeight() / 2);
                 mWindowManager.updateViewLayout(FloatingButton.this, params);
 
-                mInAnimator.start();
-                mRingAnimator.start();
             }
         });
     }
@@ -141,25 +122,6 @@ public class FloatingButton extends LinearLayout {
         mMovementHandler.recycle();
     }
 
-    @Override protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        canvas.drawArc(mRingBounds, -90, mCurrentRingAngle, false, mRingPaint);
-    }
-
-    public void hide(@Nullable final HideCallback callback) {
-        setEnabled(false);
-        mOutAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override public void onAnimationEnd(Animator animation) {
-                mOutAnimator.removeListener(this);
-                if (callback != null) {
-                    callback.onViewHidden();
-                }
-            }
-        });
-        mRingAnimator.cancel();
-        mOutAnimator.setStartDelay(400);
-        mOutAnimator.start();
-    }
 
     public interface HideCallback {
         void onViewHidden();

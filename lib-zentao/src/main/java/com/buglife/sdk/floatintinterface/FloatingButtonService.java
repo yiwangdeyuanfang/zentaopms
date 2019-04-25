@@ -82,7 +82,18 @@ public class FloatingButtonService {
         mFloatingButton = new FloatingButton(mContext);
         mFloatingButton.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-//                stopRecording();
+
+                FileAttachment screenshot = Buglife.captureScreenshot();
+                Buglife.addAttachment(screenshot);
+                Buglife.showReporter();
+            }
+        });
+
+        mFloatingButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Buglife.startScreenRecording();
+                return true;
             }
         });
 
