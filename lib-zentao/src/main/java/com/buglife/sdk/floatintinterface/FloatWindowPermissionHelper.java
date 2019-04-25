@@ -60,19 +60,19 @@ public final class FloatWindowPermissionHelper extends Fragment {
 
     private void checkOverlayPermissions() {
         // First make sure we can draw an overlay
-        if (!Settings.canDrawOverlays(getContext())) {
+//        if (!Settings.canDrawOverlays(getContext())) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
             startActivityForResult(intent, SCREEN_OVERLAY_REQUEST_CODE);
-        }
+//        }
     }
 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SCREEN_OVERLAY_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
+//            if (resultCode == Activity.RESULT_OK) {
                 mPermissionCallback.onPermissionGranted(resultCode, data);
-            }
+//            }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

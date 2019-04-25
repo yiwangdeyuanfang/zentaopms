@@ -483,8 +483,10 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
     }
 
     private void startFoatWindowFlow(){
-        Activity activity = mForegroundDetector.getCurrentActivity();
-        activity.startService(new Intent(activity, FloatingButtonService.class));
+        FloatingButtonService floatingButton = new FloatingButtonService(mAppContext);
+        floatingButton.start();
+//        Activity activity = mForegroundDetector.getCurrentActivity();
+//        activity.startService(new Intent(activity, FloatingButtonService.class));
     }
 
     private void startBuglifeActivity(Intent intent) {
