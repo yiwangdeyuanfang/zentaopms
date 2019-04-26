@@ -72,15 +72,15 @@ class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolde
             String path = file.getAbsolutePath();
             Bitmap scaledBitmap = scaleBitmapForThumbnail(mContext, BitmapFactory.decodeFile(path));
             viewHolder.thumbnailView.setImageBitmap(scaledBitmap);
-            viewHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mItemClickListener != null) {
-                        mItemClickListener.itemClick(position, attachment);
-                    }
-                }
-            });
         }
+        viewHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mItemClickListener != null) {
+                    mItemClickListener.itemClick(position, attachment);
+                }
+            }
+        });
         viewHolder.titleView.setText(file.getName());
     }
 

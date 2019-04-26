@@ -425,15 +425,15 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
 
-        int i = view.getId();
-        if (i == R.id.add_iv) {
-            if (Build.VERSION.SDK_INT >= 23) {
-                setPermission();
-            }else {
+//        int i = view.getId();
+//        if (i == R.id.add_iv) {
+//            if (Build.VERSION.SDK_INT >= 23) {
+//                setPermission();
+//            }else {
                 openMultiImageSelector();
-            }
+//            }
 
-        }
+//        }
     }
 
     public void showLoginDialog(final String sessionId){
@@ -458,11 +458,8 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void setPermission() {
-        String[] mPermissionList =
-                new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_LOGS, Manifest.permission.READ_PHONE_STATE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SET_DEBUG_APP,
-                        Manifest.permission.SYSTEM_ALERT_WINDOW,
+        String[] mPermissionList = new String[] {
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_APN_SETTINGS };
         ActivityCompat.requestPermissions(this, mPermissionList, REQUEST_IMAGE);
 
