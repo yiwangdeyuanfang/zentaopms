@@ -406,7 +406,7 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
             permissionHelper = FloatWindowPermissionHelper.newInstance();
             permissionHelper.setPermissionCallback(new FloatWindowPermissionHelper.PermissionCallback() {
                 @Override
-                public void onPermissionGranted(int resultCode, Intent data) {
+                public void onPermissionGranted() {
                     startFoatWindowFlow();
                 }
 

@@ -22,8 +22,7 @@
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/attachment_list_view"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"/>
+                    android:layout_height="wrap_content"/>
             <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
