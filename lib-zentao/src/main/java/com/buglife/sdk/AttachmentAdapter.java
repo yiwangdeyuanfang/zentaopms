@@ -26,8 +26,8 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.File;
@@ -72,7 +72,7 @@ class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolde
             String path = file.getAbsolutePath();
             Bitmap scaledBitmap = scaleBitmapForThumbnail(mContext, BitmapFactory.decodeFile(path));
             viewHolder.thumbnailView.setImageBitmap(scaledBitmap);
-            viewHolder.thumbnailView.setOnClickListener(new View.OnClickListener() {
+            viewHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (mItemClickListener != null) {
@@ -105,11 +105,13 @@ class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolde
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout linearLayout;
         TextView titleView;
         ImageView thumbnailView;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            linearLayout = itemView.findViewById(R.id.attachment_list_ll);
             titleView =  itemView.findViewById(R.id.attachment_list_title);
             thumbnailView =  itemView.findViewById(R.id.attachment_list_thumbnail);
         }
