@@ -62,15 +62,21 @@ public final class Report {
             params.put("assignedTo", assignedToAttribute.getValue());
         }
 
-        Attribute openedBuildAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_ASSIGNEDTO);
+        Attribute openedBuildAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_OPENEDBUILD);
         if(openedBuildAttribute != null){
             params.put("openedBuild", "trunk");
         }else {
             params.put("openedBuild", "trunk");
         }
 
-        params.put("product", "1");
-        params.put("module", "1");
+        Attribute moduleAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_MODULE);
+        if(moduleAttribute != null){
+            params.put("module", moduleAttribute.getValue());
+        }else {
+            params.put("module", "0");
+        }
+
+        params.put("product", Buglife.getProductId());
         params.put("os", "Android");
 
 

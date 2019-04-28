@@ -25,7 +25,7 @@ public class BugInfo implements Parcelable {
     private int productID;
     private String productName;
 
-    public List<String> moduleOptionMenu;   // 改为 Map 集合即可
+    public HashMap<String, String> moduleOptionMenu;   // 改为 Map 集合即可
 
     private HashMap<String,String> products;
 
@@ -45,15 +45,35 @@ public class BugInfo implements Parcelable {
     protected BugInfo(Parcel in) {
         title = in.readString();
         productID = in.readInt();
-        moduleOptionMenu = in.createStringArrayList();
         productName = in.readString();
         moduleID = in.readInt();
         projectID = in.readInt();
         taskID = in.readInt();
         storyID = in.readInt();
+        buildID = in.readInt();
         severity = in.readInt();
         type = in.readString();
         assignedTo = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeInt(productID);
+        dest.writeString(productName);
+        dest.writeInt(moduleID);
+        dest.writeInt(projectID);
+        dest.writeInt(taskID);
+        dest.writeInt(storyID);
+        dest.writeInt(buildID);
+        dest.writeInt(severity);
+        dest.writeString(type);
+        dest.writeString(assignedTo);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<BugInfo> CREATOR = new Creator<BugInfo>() {
@@ -76,13 +96,12 @@ public class BugInfo implements Parcelable {
         this.title = title;
     }
 
-
-    public HashMap<String, String> getProducts() {
-        return products;
+    public HashMap<String, String> getProjects() {
+        return projects;
     }
 
-    public void setProducts(HashMap<String, String> products) {
-        this.products = products;
+    public void setProjects(HashMap<String, String> projects) {
+        this.projects = projects;
     }
 
     public HashMap<String, String> getUsers() {
@@ -109,28 +128,20 @@ public class BugInfo implements Parcelable {
         this.productName = productName;
     }
 
-    public List<String> getModuleOptionMenu() {
+    public HashMap<String, String> getModuleOptionMenu() {
         return moduleOptionMenu;
     }
 
-    public void setModuleOptionMenu(List<String> moduleOptionMenu) {
+    public void setModuleOptionMenu(HashMap<String, String> moduleOptionMenu) {
         this.moduleOptionMenu = moduleOptionMenu;
     }
 
-    public int getBuildID() {
-        return buildID;
+    public HashMap<String, String> getProducts() {
+        return products;
     }
 
-    public void setBuildID(int buildID) {
-        this.buildID = buildID;
-    }
-
-    public HashMap<String, String> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(HashMap<String, String> projects) {
-        this.projects = projects;
+    public void setProducts(HashMap<String, String> products) {
+        this.products = products;
     }
 
     public HashMap<String, String> getBuilds() {
@@ -173,6 +184,14 @@ public class BugInfo implements Parcelable {
         this.storyID = storyID;
     }
 
+    public int getBuildID() {
+        return buildID;
+    }
+
+    public void setBuildID(int buildID) {
+        this.buildID = buildID;
+    }
+
     public int getSeverity() {
         return severity;
     }
@@ -195,25 +214,5 @@ public class BugInfo implements Parcelable {
 
     public void setAssignedTo(String assignedTo) {
         this.assignedTo = assignedTo;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(title);
-        parcel.writeInt(productID);
-        parcel.writeString(productName);
-        parcel.writeStringList(moduleOptionMenu);
-        parcel.writeInt(moduleID);
-        parcel.writeInt(projectID);
-        parcel.writeInt(taskID);
-        parcel.writeInt(storyID);
-        parcel.writeInt(severity);
-        parcel.writeString(type);
-        parcel.writeString(assignedTo);
     }
 }

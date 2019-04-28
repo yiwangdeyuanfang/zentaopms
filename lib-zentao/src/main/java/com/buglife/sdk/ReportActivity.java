@@ -27,7 +27,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -81,7 +80,11 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     //所有用户
     private AllUserData mAllUserData;
 
-    private List<ProjectsData> mProjectsData;
+    private List<ModeItemData> mProjectsData;
+
+    private List<ModeItemData> mBuildData; //版本号信息
+
+    private List<ModeItemData> mModuleData; //模块信息
 
     private PickerInputField mAssignedToField; //可分配的人
 
@@ -164,6 +167,8 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     public void initModelData() {
         mAllUserData = new AllUserData();
         mProjectsData = new ArrayList<>();
+        mBuildData = new ArrayList<>();
+        mModuleData = new ArrayList<>();
     }
 
     public void initContentItem() {
@@ -207,18 +212,26 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
         for (String severity : ZentaoConstant.PRI_TYPE) {
             mPriField.addOption(severity);
         }
-
-        //版本
-        PickerInputField projectsField = new PickerInputField(ZentaoConstant.BUG_PROJECTS);
-        projectsField.setTitle("版本号");
-        for (ProjectsData data : mProjectsData) {
-            if (!TextUtils.isEmpty(data.getProjectsId())) {
-                projectsField.addOption(data.getProjectsDes(), data.getProjectsId());
+        //所属模块
+        PickerInputField moduleField = new PickerInputField(ZentaoConstant.BUG_MODULE);
+        moduleField.setTitle("所属模块");
+        for (ModeItemData data : mModuleData) {
+            if (!TextUtils.isEmpty(data.getId())) {
+                moduleField.addOption(data.getDescripte(), data.getId());
             }
         }
 
-        Buglife.setInputFields(titleTextIput, stepTextInput, mAssignedToField, mSeverityField, mBugTypeField, mPriField,
-                projectsField);
+        //版本号
+        PickerInputField buildField = new PickerInputField(ZentaoConstant.BUG_OPENEDBUILD);
+        buildField.setTitle("版本号");
+        for (ModeItemData data : mBuildData) {
+            if (!TextUtils.isEmpty(data.getId())) {
+                buildField.addOption(data.getDescripte(), data.getId());
+            }
+        }
+
+        Buglife.setInputFields(titleTextIput, stepTextInput, mAssignedToField, mSeverityField, mBugTypeField, mPriField,moduleField,
+                buildField);
     }
 
     public void initContentItemRes() {
@@ -480,13 +493,37 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void setBugAllInfo(BugInfo accountInfo) {
+
+        mProjectsData.clear();
+        mBuildData.clear();
+        mModuleData.clear();
+
+
         Map<String, String> products = accountInfo.getProjects(); //对动态的key，来创建map，间接从中取出实体类futrue。
         for (String key : products.keySet()) {                        //遍历取出key，再遍历map取出value。
 
-            ProjectsData projectsData = new ProjectsData();
-            projectsData.setProjectsId(key);
-            projectsData.setProjectsDes(products.get(key));
+            ModeItemData projectsData = new ModeItemData();
+            projectsData.setId(key);
+            projectsData.setDescripte(products.get(key));
             mProjectsData.add(projectsData);
+        }
+
+        Map<String, String> builds = accountInfo.getBuilds(); //对动态的key，来创建map，间接从中取出实体类futrue。
+        for (String key : builds.keySet()) {                        //遍历取出key，再遍历map取出value。
+
+            ModeItemData buildData = new ModeItemData();
+            buildData.setId(key);
+            buildData.setDescripte(builds.get(key));
+            mBuildData.add(buildData);
+        }
+
+        Map<String, String> moduleOptionMenudule = accountInfo.getModuleOptionMenu(); //对动态的key，来创建map，间接从中取出实体类futrue。
+        for (String key : moduleOptionMenudule.keySet()) {                        //遍历取出key，再遍历map取出value。
+
+            ModeItemData moduleData = new ModeItemData();
+            moduleData.setId(key);
+            moduleData.setDescripte(moduleOptionMenudule.get(key));
+            mModuleData.add(moduleData);
         }
 
         Map<String, String> account = accountInfo.getUsers(); //对动态的key，来创建map，间接从中取出实体类futrue。

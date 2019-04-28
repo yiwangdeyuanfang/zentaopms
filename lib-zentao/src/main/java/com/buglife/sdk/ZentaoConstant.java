@@ -8,35 +8,51 @@ import java.util.List;
 
 /**
  * @author zhangyueli
- * @date  2019/4/18 上午11:32
- *
-*/
+ * @date 2019/4/18 上午11:32
+ */
 public class ZentaoConstant {
 
-    public static final String ZENTAO_URL = "http://192.168.80.30/zentaopms/www";
+//    public static String ZENTAO_URL = "http://192.168.80.30/zentaopms/www";
+    public static String ZENTAO_URL = "http://39.107.123.15:9091";
 
     public static final String APP_NAME = "zentao";
 
-    public static final String ZENTAO_CONFIG_URL = ZENTAO_URL + "/index.php?mode=getconfig";
-    public static final String LOGIN_URL = ZENTAO_URL + "/index.php?m=user&f=login&t=json&zentaosid=%s&account=%s&password=%s&keepLogin=%s";
-    public static final String LOGOUT_URL = ZENTAO_URL + "/index.php?m=user&f=logout&t=json";
-    public static final String ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=%s&zentaosid=%s";
-    public static final String LOAD_ALL_USERS = ZENTAO_URL + "/index.php?m=bug&f=ajaxLoadAllUsers&t=json&zentaosid=%s";
-    public static final String SEVERITY_LIST = ZENTAO_URL + "/index.php?m=custom&f=set&module=bug&t=json&field=severityList&zentaosid=%s";
-    public static final String PRODUCTS_LIST = ZENTAO_URL + "/index.php?m=product&f=all&t=json";
-    public static final String PROJECTS_LIST = ZENTAO_URL + "/index.php?m=project&f=team&t=json&projectID=1&zentaosid=%s";
+    public static String ZENTAO_CONFIG_URL = ZENTAO_URL + "/index.php?mode=getconfig";
+    public static String LOGIN_URL =
+            ZENTAO_URL + "/index.php?m=user&f=login&t=json&zentaosid=%s&account=%s&password=%s&keepLogin=%s";
+    public static String LOGOUT_URL = ZENTAO_URL + "/index.php?m=user&f=logout&t=json";
+    public static String ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=%s&zentaosid=%s";
+    public static String LOAD_ALL_USERS = ZENTAO_URL + "/index.php?m=bug&f=ajaxLoadAllUsers&t=json&zentaosid=%s";
+    public static String SEVERITY_LIST =
+            ZENTAO_URL + "/index.php?m=custom&f=set&module=bug&t=json&field=severityList&zentaosid=%s";
+    public static String PRODUCTS_LIST = ZENTAO_URL + "/index.php?m=product&f=all&t=json";
+    public static String PROJECTS_LIST = ZENTAO_URL + "/index.php?m=project&f=team&t=json&projectID=1&zentaosid=%s";
+
+    public static void setUrl(String baseUrl) {
+
+        ZENTAO_URL = baseUrl;
+
+        ZENTAO_CONFIG_URL = ZENTAO_URL + "/index.php?mode=getconfig";
+        LOGIN_URL = ZENTAO_URL + "/index.php?m=user&f=login&t=json&zentaosid=%s&account=%s&password=%s&keepLogin=%s";
+        LOGOUT_URL = ZENTAO_URL + "/index.php?m=user&f=logout&t=json";
+        ZENTAO_REPORT_URL = ZENTAO_URL + "/index.php?m=bug&f=create&t=json&productID=%s&zentaosid=%s";
+        LOAD_ALL_USERS = ZENTAO_URL + "/index.php?m=bug&f=ajaxLoadAllUsers&t=json&zentaosid=%s";
+        SEVERITY_LIST = ZENTAO_URL + "/index.php?m=custom&f=set&module=bug&t=json&field=severityList&zentaosid=%s";
+        PRODUCTS_LIST = ZENTAO_URL + "/index.php?m=product&f=all&t=json";
+        PROJECTS_LIST = ZENTAO_URL + "/index.php?m=project&f=team&t=json&projectID=1&zentaosid=%s";
+    }
 
     //严重等级
-    public static String[] SEVERITY = {"1","2","3","4"};
+    public static String[] SEVERITY = { "1", "2", "3", "4" };
 
     //优先级
-    public static String[] PRI_TYPE = {"1","2","3","4"};
+    public static String[] PRI_TYPE = { "1", "2", "3", "4" };
 
     private static List<BugTypeData> bugTypeDataList;
 
     //BUG类型
-    public static List<BugTypeData> bugTypeList(){
-        if(bugTypeDataList == null) {
+    public static List<BugTypeData> bugTypeList() {
+        if (bugTypeDataList == null) {
             bugTypeDataList = new ArrayList<>();
             bugTypeDataList.add(new BugTypeData("codeerror", "代码错误"));
             bugTypeDataList.add(new BugTypeData("interface", "界面优化"));
@@ -62,13 +78,12 @@ public class ZentaoConstant {
     public static String BUG_FILES = "files";
     public static String BUG_PRODUCT = "product";
     public static String BUG_PROJECTS = "projects";
-    public static String BUG_MODULE = "module";
+    public static String BUG_MODULE = "module";             //所属模块
     public static String BUG_TYPE = "type";                //bug类型
     public static String BUG_SEVERITY = "severity";        //严重程度
     public static String BUG_STEPS = "steps";
     public static String BUG_OS = "os";                    //操作系统
     public static String BUG_PRI = "pri";                  //优先级
-
 
     public static String SESSION_ID = "sessionId";  //
 
