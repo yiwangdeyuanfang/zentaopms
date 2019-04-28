@@ -29,9 +29,6 @@ import okhttp3.Response;
 public class NetworkManager {
 
     private static final int INITIAL_TIMEOUT_MS = 60 * 1000;
-//    public static final String BUGLIFE_URL = "https://www.buglife.com";
-//    public static final String BUGLIFE_URL = "http://127.0.0.1/zentaopms/www";
-    public static final String BUGLIFE_URL = "http://192.168.80.30/zentaopms/www";
 
 
     private static NetworkManager mInstance;

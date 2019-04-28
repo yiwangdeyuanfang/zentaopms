@@ -6,6 +6,7 @@ package com.buglife.sdk.view;/**
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import com.buglife.sdk.Buglife;
 import com.buglife.sdk.Log;
 import com.buglife.sdk.ZentaoConstant;
 import com.buglife.sdk.model.*;
@@ -48,6 +49,7 @@ public class ReportPresenter {
 
         if(!TextUtils.isEmpty(sessionId)){ //sessionId不为空时，说明登录过，不用再次登录
             mSessionId = sessionId;
+            Buglife.setSessionId(mSessionId);
 
             SharedPreferences loginSp = context.getSharedPreferences(ZentaoConstant.APP_NAME, Context.MODE_PRIVATE);
             boolean login = loginSp.getBoolean(ZentaoConstant.LOGIN,false);
@@ -69,6 +71,8 @@ public class ReportPresenter {
                     mView.setZentaoConfig(zentaoConfigData);
 
                     mSessionId = zentaoConfigData.getSessionID();
+
+                    Buglife.setSessionId(mSessionId);
                     SharedPreferences sp = context.getSharedPreferences(ZentaoConstant.APP_NAME, Context.MODE_PRIVATE);
                     sp.edit().putString(ZentaoConstant.SESSION_ID,zentaoConfigData.getSessionID()).commit();
 

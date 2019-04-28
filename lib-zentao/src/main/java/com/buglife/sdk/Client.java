@@ -69,6 +69,7 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
     @Nullable private String mUserEmail = null;
     @Nullable private String mProductName = null;
     @Nullable private String mProductId = null;
+    @Nullable private String mSessionId = null;
     @NonNull private final ArrayList<FileAttachment> mQueuedAttachments;
     @NonNull private final AttributeMap mAttributes;
     @Nullable private ArrayList<InputField> mInputFields;
@@ -212,6 +213,14 @@ final class Client implements ForegroundDetector.OnForegroundListener, Invocatio
 
     public String getProductName(){
         return mProductName;
+    }
+
+    public void setSessionId(String sessionId){
+        mSessionId = sessionId;
+    }
+
+    public String getSessionId(){
+        return mSessionId;
     }
 
     @Deprecated

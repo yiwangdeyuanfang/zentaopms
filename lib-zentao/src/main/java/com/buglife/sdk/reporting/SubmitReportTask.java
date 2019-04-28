@@ -17,6 +17,7 @@
 
 package com.buglife.sdk.reporting;
 
+import com.buglife.sdk.Buglife;
 import com.buglife.sdk.Log;
 import com.buglife.sdk.NetworkManager;
 
@@ -35,13 +36,6 @@ import java.util.UUID;
 
 public final class SubmitReportTask {
     private final NetworkManager mNetworkManager;
-    private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
-    //    private static final String BUGLIFE_REPORT_URL = NetworkManager.BUGLIFE_URL+"/api/v1/reports.json";
-    //    private static final String BUGLIFE_REPORT_URL = NetworkManager.BUGLIFE_URL+"/index.php?m=bug&f=create&productID=2&t=json";
-    private static final String BUGLIFE_REPORT_URL =
-            "http://192.168.80.30/zentaopms/www/index.php?m=bug&f=create&t=json&productID=1&zentaosid=5nk9viec8fk6nithsv3trq3690";
-    private static final String LOG_REPORT_URL =
-            NetworkManager.BUGLIFE_URL + "/index.php?m=user&f=login&t=json&zentaosid=5nk9viec8fk6nithsv3trq3690";
 
     public SubmitReportTask() {
         mNetworkManager = NetworkManager.getInstance();
@@ -140,9 +134,11 @@ public final class SubmitReportTask {
                 .setType(MultipartBody.FORM)
                 .build();
 
+        String url = String.format(ZentaoConstant.ZENTAO_REPORT_URL, Buglife.getProductId(),Buglife.getSessionId());
+
         return new Request.Builder()
                 .header("Authorization", "Client-ID " + UUID.randomUUID())
-                .url(BUGLIFE_REPORT_URL)
+                .url(url)
                 .post(multipartBody)
                 .build();
 

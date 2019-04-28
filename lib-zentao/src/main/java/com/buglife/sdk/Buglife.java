@@ -86,6 +86,13 @@ public final class Buglife {
         return getClient().getProductId();
     }
 
+    public static void setSessionId(String session) {
+        getClient().setSessionId(session);
+    }
+
+    public static String getSessionId() {
+        return getClient().getSessionId();
+    }
     /**
      * Specifies a user identifier that will be submitted with bug reports. This can be a name,
      * database identifier, or any other string of your choosing.

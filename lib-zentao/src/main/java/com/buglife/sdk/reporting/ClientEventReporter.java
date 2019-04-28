@@ -18,10 +18,7 @@
 
 package com.buglife.sdk.reporting;
 
-import com.buglife.sdk.ApiIdentity;
-import com.buglife.sdk.Buglife;
-import com.buglife.sdk.Log;
-import com.buglife.sdk.NetworkManager;
+import com.buglife.sdk.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +39,7 @@ public final class ClientEventReporter {
     private final Context mContext;
 
     private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String BUGLIFE_CLIENT_EVENTS_URL = NetworkManager.BUGLIFE_URL+"/api/v1/client_events.json";
+    private static final String BUGLIFE_CLIENT_EVENTS_URL = ZentaoConstant.ZENTAO_URL +"/api/v1/client_events.json";
 
     ClientEventReporter(Context context) {
         mContext = context;

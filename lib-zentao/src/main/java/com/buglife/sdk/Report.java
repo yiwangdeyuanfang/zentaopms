@@ -64,7 +64,7 @@ public final class Report {
 
         Attribute openedBuildAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_OPENEDBUILD);
         if(openedBuildAttribute != null){
-            params.put("openedBuild", "trunk");
+            params.put("openedBuild", openedBuildAttribute.getValue());
         }else {
             params.put("openedBuild", "trunk");
         }
@@ -93,6 +93,14 @@ public final class Report {
         }else {
             params.put("severity", "4");
         }
+
+        Attribute priAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_PRI);
+        if(priAttribute != null){
+            params.put("pri", priAttribute.getValue());
+        }else {
+            params.put("pri", "4");
+        }
+
 
         Attribute stepsAttribute = mBugContext.getAttribute(ZentaoConstant.BUG_STEPS);
         if(stepsAttribute != null){
