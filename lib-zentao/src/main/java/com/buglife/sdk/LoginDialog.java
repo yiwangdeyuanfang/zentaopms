@@ -30,6 +30,7 @@ public class LoginDialog extends Dialog {
     private TextView mLoginBtn;
 
     private OnLoginClickListener mLoginListener;
+    private View.OnClickListener mCancelListener;
 
     public LoginDialog(Context context) {
         super(context, R.style.CustomDialog);
@@ -59,6 +60,9 @@ public class LoginDialog extends Dialog {
         mCancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(mCancelListener != null){
+                    mCancelListener.onClick(v);
+                }
                 dismiss();
             }
         });
@@ -87,6 +91,10 @@ public class LoginDialog extends Dialog {
         lp.width = (int) (ScreenUtils.getScreenWidthPx(mContext) * 0.85); // 设置宽度
         // lp.height = (int) (470 * 1.04);
         this.getWindow().setAttributes(lp);
+    }
+
+    public void setCancelClickListener(View.OnClickListener listener) {
+        mCancelListener = listener;
     }
 
     public void setLoginClickListener(OnLoginClickListener listener) {

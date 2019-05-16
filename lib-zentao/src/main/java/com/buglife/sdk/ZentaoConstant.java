@@ -46,7 +46,7 @@ public class ZentaoConstant {
     public static String[] SEVERITY = { "1", "2", "3", "4" };
 
     //优先级
-    public static String[] PRI_TYPE = { "1", "2", "3", "4" };
+    public static String[] PRI_TYPE = { "1", "2", "3", "4","UI"};
 
     private static List<BugTypeData> bugTypeDataList;
 

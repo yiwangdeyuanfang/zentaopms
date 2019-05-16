@@ -27,6 +27,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -438,20 +439,27 @@ public class ReportActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
 
-//        int i = view.getId();
-//        if (i == R.id.add_iv) {
-//            if (Build.VERSION.SDK_INT >= 23) {
-//                setPermission();
-//            }else {
+        int i = view.getId();
+        if (i == R.id.add_iv) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                setPermission();
+            }else {
                 openMultiImageSelector();
-//            }
+            }
 
-//        }
+        }
     }
 
     public void showLoginDialog(final String sessionId){
         final LoginDialog loginDialog = new LoginDialog(this);
         loginDialog.showDialog();
+        loginDialog.setCancelClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loginDialog.dismiss();
+                finish();
+            }
+        });
         loginDialog.setLoginClickListener(new LoginDialog.OnLoginClickListener() {
             @Override
             public void onLoginClick(String userName, String password) {
